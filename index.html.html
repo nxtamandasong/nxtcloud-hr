@@ -403,9 +403,6 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
         <span id="inboxBadge" style="display:none;background:#ef4444;color:#fff;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:700"></span>
       </div>
       <div class="nav-section">지원</div>
-      <div class="nav-item" onclick="navigate('chat',this)">
-        <span class="nav-icon">🤖</span> HR 챗봇
-      </div>
       <div class="nav-item" onclick="navigate('profile',this)">
         <span class="nav-icon">👤</span> 내 정보
       </div>
@@ -614,33 +611,6 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
           <div id="myResultList"></div>
         </div>
       </div>
-
-      <!-- ── CHATBOT ── -->
-      <div class="page" id="page-chat">
-        <div class="page-title">HR 챗봇</div>
-        <div class="page-sub">인사 관련 궁금한 사항을 물어보세요</div>
-
-        <div class="quick-btns" style="padding:0 0 12px">
-          <button class="quick-btn" onclick="sendQuick('내 남은 연차가 며칠이야?')">🗓 남은 연차 확인</button>
-          <button class="quick-btn" onclick="sendQuick('연차 계산 방식을 알려줘')">📊 연차 계산 방법</button>
-          <button class="quick-btn" onclick="sendQuick('연차 신청은 어떻게 해?')">✏️ 연차 신청 방법</button>
-          <button class="quick-btn" onclick="sendQuick('내 입사일이 언제야?')">👤 내 정보 확인</button>
-        </div>
-
-        <div class="chat-wrap">
-          <div class="chat-messages" id="chatMessages">
-            <div class="msg bot">
-              <div class="msg-bubble">안녕하세요! 👋 저는 NxtCloud HR 챗봇입니다.<br>연차, 근무 정책, 인사 관련 궁금한 점을 편하게 물어보세요!</div>
-              <div class="msg-time">지금</div>
-            </div>
-          </div>
-          <div class="chat-input-area">
-            <textarea class="chat-input" id="chatInput" rows="1" placeholder="메시지를 입력하세요..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"></textarea>
-            <button class="chat-send-btn" id="sendBtn" onclick="sendChat()">↑</button>
-          </div>
-        </div>
-      </div>
-
       <!-- ── PROFILE ── -->
       <div class="page" id="page-profile">
         <div class="page-title">내 정보</div>
@@ -855,7 +825,6 @@ function getTotalRemaining(leaveData) {
 let currentEmp = null;
 let selectedEmpId = null;
 let leaveRequests = {}; // { empId: [...] }
-let chatHistory = {}; // { empId: [{role,content}] }
 
 // ══════════════════════════════════════════
 //  LOGIN
@@ -932,7 +901,6 @@ async function doLogin() {
 
   currentEmp = emp;
   if (!leaveRequests[emp.id]) leaveRequests[emp.id] = [];
-  if (!chatHistory[emp.id])   chatHistory[emp.id]   = [];
 
   // 시트에서 기존 신청내역 + 알림 로드
   loadRequestsFromSheet(emp.id);
@@ -1007,14 +975,13 @@ function navigate(pageId, navEl) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + pageId).classList.add('active');
 
-  const titles = {dashboard:'대시보드', leave:'연차 관리', request:'휴가 신청', inbox:'알림함', chat:'HR 챗봇', profile:'내 정보', admin:'관리자 현황'};
+  const titles = {dashboard:'대시보드', leave:'연차 관리', request:'휴가 신청', inbox:'알림함', profile:'내 정보', admin:'관리자 현황'};
   document.getElementById('topbarPage').textContent = titles[pageId] || '';
 
   if (pageId === 'dashboard') renderDashboard();
   if (pageId === 'leave')     renderLeaveDetail();
   if (pageId === 'profile')   renderProfile();
   if (pageId === 'request')   { renderLeaveHistory(); onLeaveTypeChange(); }
-  if (pageId === 'chat')      renderChat();
   if (pageId === 'admin')     renderAdmin();
   if (pageId === 'inbox')     renderInbox();
 }
@@ -1994,112 +1961,6 @@ function cancelRequest(reqId) {
 // ══════════════════════════════════════════
 //  CHATBOT
 // ══════════════════════════════════════════
-function renderChat() {
-  // 이미 메시지 있으면 유지
-}
-
-function buildSystemPrompt() {
-  const emp = currentEmp;
-  const leaveData = calcLeave(emp);
-  const remaining = getTotalRemaining(leaveData);
-  const serviceDays = Math.floor((TODAY - emp.hireDate) / (1000*60*60*24));
-  const leaveInfo = leaveData.map(d=>
-    `${d.year}년: ${d.generated}일 발생, 사용 ${d.used}일, 잔여 ${d.generated-d.used}일, ${d.expired?'소멸':'유효'} (소멸일: ${d.expiryDate.getFullYear()}.12.31)`
-  ).join('\n');
-  const requests = leaveRequests[emp.id] || [];
-
-  return `당신은 NxtCloud 회사의 친절한 HR(인사관리) 챗봇입니다.
-현재 로그인한 직원 정보:
-- 이름: ${emp.name}
-- 입사일: ${emp.hireDate.toISOString().slice(0,10)}
-- 오늘 날짜: 2026-03-11
-- 근속 일수: ${serviceDays}일
-- 부서: ${emp.dept}
-
-연차 현황 (회계연도 기준, 1월~12월):
-${leaveInfo}
-총 잔여 연차: ${remaining}일
-
-신청한 휴가 수: ${requests.length}건
-
-회사 연차 정책:
-- 회계연도 기준(1월 1일~12월 31일)
-- 입사 첫해: 1개월 개근 시 1일 발생 (최대 11일)
-- 1년 이상: 전년도 출근율 80% 이상 시 15일, 3년 이상부터 2년마다 1일 추가 (최대 25일)
-- 소멸: 발생 다음 회계연도 말(12월 31일)
-- 반차는 0.5일 차감
-
-반드시 한국어로 친절하고 간결하게 답변하세요. 수치와 날짜는 정확하게 알려주세요.`;
-}
-
-async function sendChat() {
-  const input = document.getElementById('chatInput');
-  const msg = input.value.trim();
-  if (!msg) return;
-  input.value = '';
-  appendMsg('user', msg);
-  const sendBtn = document.getElementById('sendBtn');
-  sendBtn.disabled = true;
-  appendTyping();
-  chatHistory[currentEmp.id].push({ role:'user', content: msg });
-
-  try {
-    const resp = await fetch('/api/chat', {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({
-        model:'claude-sonnet-4-5',
-        max_tokens:1000,
-        system: buildSystemPrompt(),
-        messages: chatHistory[currentEmp.id]
-      })
-    });
-    const data = await resp.json();
-    console.log('API 응답 상태:', resp.status, JSON.stringify(data));
-    removeTyping();
-    if (!resp.ok || data.error) {
-      const errMsg = data.error?.message || data.error || `HTTP ${resp.status}`;
-      appendMsg('bot', `⚠️ 오류: ${errMsg}`);
-      return;
-    }
-    const reply = data.content?.[0]?.text || '답변을 가져오지 못했습니다.';
-    chatHistory[currentEmp.id].push({ role:'assistant', content: reply });
-    appendMsg('bot', reply);
-  } catch(e) {
-    removeTyping();
-    console.error('챗봇 오류:', e);
-    appendMsg('bot', '⚠️ 연결에 문제가 생겼습니다: ' + e.message);
-  }
-  sendBtn.disabled = false;
-}
-
-function sendQuick(msg) {
-  document.getElementById('chatInput').value = msg;
-  sendChat();
-}
-
-function appendMsg(role, text) {
-  const container = document.getElementById('chatMessages');
-  const now = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
-  const div = document.createElement('div');
-  div.className = `msg ${role}`;
-  div.innerHTML = `<div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div><div class="msg-time">${now}</div>`;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-}
-
-function appendTyping() {
-  const container = document.getElementById('chatMessages');
-  const div = document.createElement('div');
-  div.className = 'msg bot'; div.id = 'typingMsg';
-  div.innerHTML = `<div class="msg-bubble"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
-}
-function removeTyping() {
-  document.getElementById('typingMsg')?.remove();
-}
-
 // ══════════════════════════════════════════
 //  UTILITIES
 // ══════════════════════════════════════════
