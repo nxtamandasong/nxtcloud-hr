@@ -1729,7 +1729,6 @@ function renderApproverSection() {
     grid.innerHTML = EXECUTIVES.map(id => {
       const e = EMPLOYEES[id];
       return `<button class="exec-select-btn" id="exec-btn-${id}" onclick="selectExec('${id}')">
-        <div style="width:32px;height:32px;border-radius:50%;margin:0 auto 6px;background:${e.color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff">${e.initials}</div>
         <div style="font-size:12px;font-weight:700">${e.name}</div>
         <div style="font-size:10px;color:var(--text3)">${e.nickname} · ${e.role === 'executive' ? 'C-Level' : ''}</div>
       </button>`;
