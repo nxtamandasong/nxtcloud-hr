@@ -1464,15 +1464,49 @@ function renderInbox() {
     }).join('');
   }
 
-  // ── 내 신청 처리 결과 ──
-  const myReqs = (leaveRequests[currentEmp.id] || []).slice().reverse();
+  // ── 내 신청 처리 결과 (알림 시트에서 승인완료/미승인완료 항목) ──
+  const myNotiResults = (notifications[currentEmp.id] || [])
+    .filter(n => n.status === '승인완료' || n.status === '미승인완료')
+    .slice().reverse();
+  const myReqs = (leaveRequests[currentEmp.id] || [])
+    .filter(r => r.status === '승인' || r.status === '미승인' || r.status === '자동승인' || r.status === '취소')
+    .slice().reverse();
+
   const resultEl = document.getElementById('myResultList');
-  if (!myReqs.length) {
-    resultEl.innerHTML = '<div style="color:var(--text3);font-size:14px;padding:8px 0">신청 내역이 없습니다.</div>';
+
+  // 알림 결과 + 신청내역 결과 합쳐서 표시
+  const allResults = [
+    ...myNotiResults.map(n => ({
+      typeLabel: n.typeLabel, date: n.date,
+      status: n.status === '승인완료' ? '승인' : '미승인',
+      approverLabel: n.fromName,
+      reason: n.reason,
+      rejectReason: n.rejectReason,
+      createdAt: n.createdAt,
+    })),
+    ...myReqs.map(r => ({
+      typeLabel: r.typeLabel, date: r.date,
+      status: r.status,
+      approverLabel: r.approverLabel,
+      reason: r.reason,
+      rejectReason: r.rejectReason,
+    })),
+  ];
+
+  // 중복 제거 (typeLabel+date 기준)
+  const seen = new Set();
+  const dedupedResults = allResults.filter(r => {
+    const key = r.typeLabel + r.date + r.status;
+    if (seen.has(key)) return false;
+    seen.add(key); return true;
+  });
+
+  if (!dedupedResults.length) {
+    resultEl.innerHTML = '<div style="color:var(--text3);font-size:14px;padding:8px 0">처리된 신청 내역이 없습니다.</div>';
   } else {
-    resultEl.innerHTML = myReqs.map(r => {
-      const icon    = r.status === '승인' ? '✅' : r.status === '미승인' ? '❌' : '⏳';
-      const color   = r.status === '승인' ? 'var(--green)' : r.status === '미승인' ? 'var(--red)' : 'var(--yellow)';
+    resultEl.innerHTML = dedupedResults.map(r => {
+      const icon  = r.status === '승인' || r.status === '자동승인' ? '✅' : r.status === '미승인' ? '❌' : '🗑';
+      const color = r.status === '승인' || r.status === '자동승인' ? 'var(--green)' : r.status === '미승인' ? 'var(--red)' : 'var(--text3)';
       const rejectMsg = r.rejectReason ? `<br><span style="color:var(--red)">미승인 사유: ${r.rejectReason}</span>` : '';
       return `<div class="result-item">
         <div class="result-icon">${icon}</div>
@@ -1480,7 +1514,7 @@ function renderInbox() {
           <div class="result-title">${r.typeLabel} · ${r.date}
             <span style="margin-left:8px;font-size:12px;font-weight:700;color:${color}">${r.status}</span>
           </div>
-          <div class="result-meta">결재: ${r.approverLabel} · ${r.reason}${rejectMsg}</div>
+          <div class="result-meta">${r.approverLabel || ''} · ${r.reason || ''}${rejectMsg}</div>
         </div>
       </div>`;
     }).join('');
@@ -1505,6 +1539,10 @@ function approveRequest(reqId) {
   // 시트 알림 상태 업데이트
   apiPost({ action: 'updateNotification', reqId, status: '승인' })
     .catch(e => console.warn('알림 상태 업데이트 실패:', e));
+
+  // 시트 휴가신청내역 상태 업데이트
+  apiPost({ action: 'updateRequestStatus', empId: noti.fromId, date: noti.date, typeLabel: noti.typeLabel, status: '승인' })
+    .catch(e => console.warn('신청 상태 업데이트 실패:', e));
 
   // 신청자에게 결과 알림
   addNotification(noti.fromId, {
@@ -1535,6 +1573,10 @@ function rejectRequest(reqId) {
   // 시트 알림 상태 업데이트
   apiPost({ action: 'updateNotification', reqId, status: '미승인', rejectReason: reason })
     .catch(e => console.warn('알림 상태 업데이트 실패:', e));
+
+  // 시트 휴가신청내역 상태 업데이트
+  apiPost({ action: 'updateRequestStatus', empId: noti.fromId, date: noti.date, typeLabel: noti.typeLabel, status: '미승인', rejectReason: reason })
+    .catch(e => console.warn('신청 상태 업데이트 실패:', e));
 
   // 신청자에게 결과 알림
   addNotification(noti.fromId, {
