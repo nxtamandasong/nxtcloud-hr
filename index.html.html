@@ -210,6 +210,30 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
   transition:all 0.3s ease;z-index:999}
 .toast.show{transform:translateY(0);opacity:1}
 
+/* ─── INBOX / APPROVAL ─── */
+.approval-item{background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:16px;margin-bottom:12px}
+.approval-item:last-child{margin-bottom:0}
+.approval-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.approval-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.approval-name{font-weight:700;font-size:14px}
+.approval-meta{font-size:12px;color:var(--text3);margin-top:1px}
+.approval-body{font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.7;padding:10px 12px;background:var(--surface);border-radius:8px}
+.approval-btns{display:flex;gap:8px}
+.btn-approve{flex:1;padding:10px;background:linear-gradient(135deg,#10b981,#059669);border:none;border-radius:8px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.btn-approve:hover{opacity:.85}
+.btn-reject{flex:1;padding:10px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;color:var(--red);font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-reject:hover{border-color:var(--red);background:rgba(239,68,68,.08)}
+.reject-reason-box{margin-top:10px;display:none}
+.reject-reason-input{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:13px;font-family:inherit;resize:none;outline:none;transition:border-color .15s}
+.reject-reason-input:focus{border-color:var(--red)}
+.btn-reject-confirm{margin-top:8px;width:100%;padding:9px;background:var(--red);border:none;border-radius:8px;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit}
+.result-item{padding:14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px}
+.result-item:last-child{border-bottom:none}
+.result-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.result-body{flex:1}
+.result-title{font-size:13px;font-weight:600;margin-bottom:3px}
+.result-meta{font-size:12px;color:var(--text3)}
+
 /* ─── ADMIN ─── */
 .admin-tab{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;
   padding:8px 18px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;
@@ -312,6 +336,11 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
       <div class="topbar-page" id="topbarPage">대시보드</div>
     </div>
     <div class="topbar-right">
+      <!-- 알림 벨 -->
+      <div style="position:relative;cursor:pointer" onclick="navigate('inbox', document.getElementById('navInbox'))" title="알림함">
+        <span style="font-size:20px">🔔</span>
+        <span id="notiBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;border-radius:50%;width:16px;height:16px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center"></span>
+      </div>
       <div class="topbar-user">
         <div class="topbar-avatar" id="topbarAvatar" style="background:linear-gradient(135deg,#f59e0b,#d97706)">다</div>
         <span id="topbarName">송다미</span>님
@@ -331,6 +360,10 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
       </div>
       <div class="nav-item" onclick="navigate('request',this)">
         <span class="nav-icon">✏️</span> 휴가 신청
+      </div>
+      <div class="nav-item" id="navInbox" onclick="navigate('inbox',this)" style="justify-content:space-between">
+        <span><span class="nav-icon">🔔</span> 알림함</span>
+        <span id="inboxBadge" style="display:none;background:#ef4444;color:#fff;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:700"></span>
       </div>
       <div class="nav-section">지원</div>
       <div class="nav-item" onclick="navigate('chat',this)">
@@ -528,6 +561,26 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
         <div class="card">
           <div class="card-title"><span class="card-title-icon">📝</span> 신청 내역</div>
           <div id="leaveHistoryList" style="color:var(--text3);font-size:14px">신청 내역이 없습니다.</div>
+        </div>
+      </div>
+
+      <!-- ── INBOX 알림함 ── -->
+      <div class="page" id="page-inbox">
+        <div class="page-title">🔔 알림함</div>
+        <div class="page-sub" id="inboxSub">내 결재 대기 및 신청 현황</div>
+
+        <!-- 결재 대기 탭 (결재자에게만 보임) -->
+        <div id="pendingSection">
+          <div class="card" id="pendingCard">
+            <div class="card-title"><span class="card-title-icon">⏳</span> 결재 대기 <span id="pendingCount" style="font-size:13px;color:var(--text3);font-weight:400"></span></div>
+            <div id="pendingList"></div>
+          </div>
+        </div>
+
+        <!-- 내 신청 처리 결과 -->
+        <div class="card">
+          <div class="card-title"><span class="card-title-icon">📬</span> 내 신청 처리 결과</div>
+          <div id="myResultList"></div>
         </div>
       </div>
 
@@ -921,7 +974,7 @@ function navigate(pageId, navEl) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + pageId).classList.add('active');
 
-  const titles = {dashboard:'대시보드', leave:'연차 관리', request:'휴가 신청', chat:'HR 챗봇', profile:'내 정보', admin:'관리자 현황'};
+  const titles = {dashboard:'대시보드', leave:'연차 관리', request:'휴가 신청', inbox:'알림함', chat:'HR 챗봇', profile:'내 정보', admin:'관리자 현황'};
   document.getElementById('topbarPage').textContent = titles[pageId] || '';
 
   if (pageId === 'dashboard') renderDashboard();
@@ -930,6 +983,7 @@ function navigate(pageId, navEl) {
   if (pageId === 'request')   { renderLeaveHistory(); onLeaveTypeChange(); }
   if (pageId === 'chat')      renderChat();
   if (pageId === 'admin')     renderAdmin();
+  if (pageId === 'inbox')     renderInbox();
 }
 
 // ══════════════════════════════════════════
@@ -1212,6 +1266,199 @@ function renderAdminRequests() {
 }
 
 // ══════════════════════════════════════════
+//  NOTIFICATION & APPROVAL SYSTEM
+// ══════════════════════════════════════════
+// notifications: { empId: [ {id, fromId, fromName, reqId, typeLabel, date, deduct, reason, status, rejectReason, createdAt} ] }
+let notifications = {};
+
+// 신청 시 결재자에게 알림 추가
+function addNotification(approverId, noti) {
+  if (!notifications[approverId]) notifications[approverId] = [];
+  // 중복 방지
+  if (!notifications[approverId].find(n => n.reqId === noti.reqId)) {
+    notifications[approverId].push(noti);
+  }
+  updateNotiBadge();
+}
+
+// 배지 업데이트
+function updateNotiBadge() {
+  if (!currentEmp) return;
+  const myNoti = notifications[currentEmp.id] || [];
+  const pending = myNoti.filter(n => n.status === '승인대기').length;
+  const badge   = document.getElementById('inboxBadge');
+  const topBadge= document.getElementById('notiBadge');
+  if (pending > 0) {
+    badge.textContent = pending;
+    badge.style.display = 'inline-flex';
+    topBadge.textContent = pending;
+    topBadge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+    topBadge.style.display = 'none';
+  }
+}
+
+// 알림함 렌더링
+function renderInbox() {
+  const myNoti = (notifications[currentEmp.id] || []).slice().reverse();
+
+  // ── 결재 대기 목록 (내가 결재자인 것들) ──
+  const pending = myNoti.filter(n => n.status === '승인대기');
+  const pendingCard = document.getElementById('pendingCard');
+  document.getElementById('pendingCount').textContent = pending.length ? `(${pending.length}건)` : '';
+
+  if (pending.length === 0) {
+    document.getElementById('pendingList').innerHTML =
+      '<div style="color:var(--text3);font-size:14px;padding:8px 0">결재 대기 중인 신청이 없습니다.</div>';
+  } else {
+    document.getElementById('pendingList').innerHTML = pending.map(n => {
+      const emp = EMPLOYEES[n.fromId];
+      const deductText = n.deduct > 0 ? `연차 ${n.deduct}일 차감` : '연차 미차감';
+      return `<div class="approval-item" id="approval-${n.reqId}">
+        <div class="approval-header">
+          <div class="approval-avatar" style="background:${emp?.color||'#475569'}">${emp?.initials||'?'}</div>
+          <div>
+            <div class="approval-name">${n.fromName} <span style="font-size:12px;color:var(--text3);font-weight:400">${emp?.dept||''}</span></div>
+            <div class="approval-meta">${n.createdAt} 신청</div>
+          </div>
+          <span class="badge badge-yellow" style="margin-left:auto">승인대기</span>
+        </div>
+        <div class="approval-body">
+          📋 <strong>${n.typeLabel}</strong> · ${n.date}<br>
+          ⏱ ${n.timeInfo || '종일'} &nbsp;·&nbsp; ${deductText}<br>
+          💬 ${n.reason}
+          ${n.subDate ? `<br>🔄 대체근무일: ${n.subDate}` : ''}
+        </div>
+        <div class="approval-btns">
+          <button class="btn-approve" onclick="approveRequest('${n.reqId}')">✅ 승인</button>
+          <button class="btn-reject" onclick="showRejectBox('${n.reqId}')">❌ 미승인</button>
+        </div>
+        <div class="reject-reason-box" id="rejectBox-${n.reqId}">
+          <textarea class="reject-reason-input" id="rejectReason-${n.reqId}" rows="2" placeholder="미승인 사유를 입력하세요 (필수)"></textarea>
+          <button class="btn-reject-confirm" onclick="rejectRequest('${n.reqId}')">미승인 확정</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── 내 신청 처리 결과 ──
+  const myReqs = (leaveRequests[currentEmp.id] || []).slice().reverse();
+  const resultEl = document.getElementById('myResultList');
+  if (!myReqs.length) {
+    resultEl.innerHTML = '<div style="color:var(--text3);font-size:14px;padding:8px 0">신청 내역이 없습니다.</div>';
+  } else {
+    resultEl.innerHTML = myReqs.map(r => {
+      const icon    = r.status === '승인' ? '✅' : r.status === '미승인' ? '❌' : '⏳';
+      const color   = r.status === '승인' ? 'var(--green)' : r.status === '미승인' ? 'var(--red)' : 'var(--yellow)';
+      const rejectMsg = r.rejectReason ? `<br><span style="color:var(--red)">미승인 사유: ${r.rejectReason}</span>` : '';
+      return `<div class="result-item">
+        <div class="result-icon">${icon}</div>
+        <div class="result-body">
+          <div class="result-title">${r.typeLabel} · ${r.date}
+            <span style="margin-left:8px;font-size:12px;font-weight:700;color:${color}">${r.status}</span>
+          </div>
+          <div class="result-meta">결재: ${r.approverLabel} · ${r.reason}${rejectMsg}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  updateNotiBadge();
+}
+
+// 미승인 사유 입력창 토글
+function showRejectBox(reqId) {
+  const box = document.getElementById(`rejectBox-${reqId}`);
+  box.style.display = box.style.display === 'block' ? 'none' : 'block';
+}
+
+// 승인 처리
+function approveRequest(reqId) {
+  const noti = findNotiByReqId(reqId);
+  if (!noti) return;
+  noti.status = '승인';
+
+  // 신청자 leaveRequests 상태 업데이트
+  updateReqStatus(noti.fromId, reqId, '승인', null);
+
+  // 신청자에게 결과 알림
+  addNotification(noti.fromId, {
+    ...noti,
+    id: Date.now(),
+    reqId: reqId + '_result',
+    status: '승인완료',
+    createdAt: nowStr(),
+  });
+
+  showToast(`✅ ${noti.fromName}님 ${noti.typeLabel} 승인 완료!`);
+  updateNotiBadge();
+  renderInbox();
+}
+
+// 미승인 처리
+function rejectRequest(reqId) {
+  const reason = document.getElementById(`rejectReason-${reqId}`).value.trim();
+  if (!reason) { alert('미승인 사유를 입력해주세요.'); return; }
+
+  const noti = findNotiByReqId(reqId);
+  if (!noti) return;
+  noti.status = '미승인';
+  noti.rejectReason = reason;
+
+  // 신청자 leaveRequests 상태 업데이트
+  updateReqStatus(noti.fromId, reqId, '미승인', reason);
+
+  // 미승인 시 연차 복구
+  if (noti.deduct > 0) {
+    // calcLeave 내부 used 는 메모리 기반이라 직접 복구
+    // 실제로는 시트에서 관리하므로 메모리 상태만 조정
+    const ld = calcLeave(EMPLOYEES[noti.fromId]);
+    let toRestore = noti.deduct;
+    for (const d of [...ld].reverse()) {
+      if (d.used >= toRestore) { d.used -= toRestore; break; }
+      toRestore -= d.used; d.used = 0;
+    }
+  }
+
+  // 신청자에게 결과 알림
+  addNotification(noti.fromId, {
+    ...noti,
+    id: Date.now(),
+    reqId: reqId + '_result',
+    status: '미승인완료',
+    rejectReason: reason,
+    createdAt: nowStr(),
+  });
+
+  showToast(`❌ ${noti.fromName}님 ${noti.typeLabel} 미승인 처리`);
+  updateNotiBadge();
+  renderInbox();
+}
+
+function findNotiByReqId(reqId) {
+  for (const id in notifications) {
+    const found = notifications[id].find(n => n.reqId === reqId);
+    if (found) return found;
+  }
+  return null;
+}
+
+function updateReqStatus(empId, reqId, status, rejectReason) {
+  const reqs = leaveRequests[empId] || [];
+  const req  = reqs.find(r => String(r.id) === String(reqId));
+  if (req) {
+    req.status = status;
+    if (rejectReason) req.rejectReason = rejectReason;
+  }
+}
+
+function nowStr() {
+  const d = new Date();
+  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+// ══════════════════════════════════════════
 //  LEAVE REQUEST
 // ══════════════════════════════════════════
 const LEAVE_TYPES = {
@@ -1427,8 +1674,31 @@ function submitLeave() {
   if (!leaveRequests[currentEmp.id]) leaveRequests[currentEmp.id] = [];
   leaveRequests[currentEmp.id].push(req);
 
+  // ── 결재자에게 알림 발송 ──
+  const approverId = currentEmp.role === 'executive' ? null
+    : currentEmp.role === 'member' ? currentEmp.approver
+    : selectedExecId;
+
+  if (approverId) {
+    addNotification(approverId, {
+      id:        req.id,
+      reqId:     String(req.id),
+      fromId:    currentEmp.id,
+      fromName:  currentEmp.name,
+      typeLabel: type.label,
+      date,
+      timeInfo:  type.annual ? `${startTime}~${endTime}` : '종일',
+      deduct:    type.deduct,
+      reason,
+      subDate:   req.subDate,
+      status:    '승인대기',
+      createdAt: nowStr(),
+    });
+  }
+
   showToast(`✅ ${type.label} 신청 완료! → ${approverName}님께 승인 요청`);
   renderLeaveHistory();
+  updateNotiBadge();
   document.getElementById('leaveReason').value = '';
   clearFile();
   if (type.annual) calcEndTime();
