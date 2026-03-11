@@ -907,6 +907,7 @@ async function doLogin() {
   loadRequestsFromSheet(emp.id);
 
   initApp();
+  updateNotiBadge(); // 로그인 시 알림 배지 즉시 업데이트
 }
 
 async function loadRequestsFromSheet(empId) {
