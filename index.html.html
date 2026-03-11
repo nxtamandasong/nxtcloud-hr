@@ -903,11 +903,12 @@ async function doLogin() {
   if (!leaveRequests[emp.id]) leaveRequests[emp.id] = [];
   if (!chatHistory[emp.id])   chatHistory[emp.id]   = [];
 
-  // 시트에서 기존 신청내역 로드
+  // 시트에서 기존 신청내역 + 알림 로드
   loadRequestsFromSheet(emp.id);
+  loadNotificationsFromSheet(emp.id);
 
   initApp();
-  updateNotiBadge(); // 로그인 시 알림 배지 즉시 업데이트
+  updateNotiBadge();
 }
 
 async function loadRequestsFromSheet(empId) {
@@ -1342,14 +1343,64 @@ function renderAdminRequests() {
 // notifications: { empId: [ {id, fromId, fromName, reqId, typeLabel, date, deduct, reason, status, rejectReason, createdAt} ] }
 let notifications = {};
 
-// 신청 시 결재자에게 알림 추가
+// 신청 시 결재자에게 알림 추가 + 시트 저장
 function addNotification(approverId, noti) {
   if (!notifications[approverId]) notifications[approverId] = [];
-  // 중복 방지
   if (!notifications[approverId].find(n => n.reqId === noti.reqId)) {
     notifications[approverId].push(noti);
   }
   updateNotiBadge();
+
+  // 구글 시트에 저장
+  apiPost({
+    action:    'saveNotification',
+    toId:      approverId,
+    fromId:    noti.fromId,
+    fromName:  noti.fromName,
+    reqId:     noti.reqId,
+    typeLabel: noti.typeLabel,
+    date:      noti.date,
+    timeInfo:  noti.timeInfo,
+    deduct:    noti.deduct,
+    reason:    noti.reason,
+    status:    noti.status,
+    subDate:   noti.subDate || '',
+  }).catch(e => console.warn('알림 시트 저장 실패:', e));
+}
+
+// 로그인 시 시트에서 알림 불러오기
+async function loadNotificationsFromSheet(empId) {
+  try {
+    const data = await apiGet({ action: 'getNotifications', empId });
+    if (data.status !== 'ok') return;
+
+    if (!notifications[empId]) notifications[empId] = [];
+
+    data.notifications.forEach(n => {
+      // 중복 방지
+      if (!notifications[empId].find(x => x.reqId === String(n.reqId))) {
+        notifications[empId].push({
+          id:        n.notiId,
+          reqId:     String(n.reqId),
+          fromId:    n.fromId,
+          fromName:  n.fromName,
+          typeLabel: n.typeLabel,
+          date:      n.date,
+          timeInfo:  n.timeInfo,
+          deduct:    parseFloat(n.deduct) || 0,
+          reason:    n.reason,
+          subDate:   n.subDate,
+          status:    n.status,
+          createdAt: n.createdAt,
+        });
+      }
+    });
+
+    updateNotiBadge();
+    if (document.getElementById('page-inbox')?.classList.contains('active')) {
+      renderInbox();
+    }
+  } catch(e) { console.warn('알림 로드 실패:', e); }
 }
 
 // 배지 업데이트
@@ -1444,22 +1495,25 @@ function showRejectBox(reqId) {
   box.style.display = box.style.display === 'block' ? 'none' : 'block';
 }
 
-// 승인 처리
 function approveRequest(reqId) {
   const noti = findNotiByReqId(reqId);
   if (!noti) return;
   noti.status = '승인';
 
-  // 신청자 leaveRequests 상태 업데이트
   updateReqStatus(noti.fromId, reqId, '승인', null);
+
+  // 시트 알림 상태 업데이트
+  apiPost({ action: 'updateNotification', reqId, status: '승인' })
+    .catch(e => console.warn('알림 상태 업데이트 실패:', e));
 
   // 신청자에게 결과 알림
   addNotification(noti.fromId, {
-    ...noti,
-    id: Date.now(),
-    reqId: reqId + '_result',
-    status: '승인완료',
-    createdAt: nowStr(),
+    id: Date.now(), reqId: reqId + '_result',
+    fromId: currentEmp.id, fromName: currentEmp.name,
+    typeLabel: noti.typeLabel, date: noti.date,
+    timeInfo: '', deduct: 0,
+    reason: `${noti.typeLabel} 승인되었습니다.`,
+    status: '승인완료', createdAt: nowStr(),
   });
 
   showToast(`✅ ${noti.fromName}님 ${noti.typeLabel} 승인 완료!`);
@@ -1467,7 +1521,6 @@ function approveRequest(reqId) {
   renderInbox();
 }
 
-// 미승인 처리
 function rejectRequest(reqId) {
   const reason = document.getElementById(`rejectReason-${reqId}`).value.trim();
   if (!reason) { alert('미승인 사유를 입력해주세요.'); return; }
@@ -1477,29 +1530,20 @@ function rejectRequest(reqId) {
   noti.status = '미승인';
   noti.rejectReason = reason;
 
-  // 신청자 leaveRequests 상태 업데이트
   updateReqStatus(noti.fromId, reqId, '미승인', reason);
 
-  // 미승인 시 연차 복구
-  if (noti.deduct > 0) {
-    // calcLeave 내부 used 는 메모리 기반이라 직접 복구
-    // 실제로는 시트에서 관리하므로 메모리 상태만 조정
-    const ld = calcLeave(EMPLOYEES[noti.fromId]);
-    let toRestore = noti.deduct;
-    for (const d of [...ld].reverse()) {
-      if (d.used >= toRestore) { d.used -= toRestore; break; }
-      toRestore -= d.used; d.used = 0;
-    }
-  }
+  // 시트 알림 상태 업데이트
+  apiPost({ action: 'updateNotification', reqId, status: '미승인', rejectReason: reason })
+    .catch(e => console.warn('알림 상태 업데이트 실패:', e));
 
   // 신청자에게 결과 알림
   addNotification(noti.fromId, {
-    ...noti,
-    id: Date.now(),
-    reqId: reqId + '_result',
-    status: '미승인완료',
-    rejectReason: reason,
-    createdAt: nowStr(),
+    id: Date.now(), reqId: reqId + '_result',
+    fromId: currentEmp.id, fromName: currentEmp.name,
+    typeLabel: noti.typeLabel, date: noti.date,
+    timeInfo: '', deduct: 0,
+    reason: `미승인 사유: ${reason}`,
+    status: '미승인완료', rejectReason: reason, createdAt: nowStr(),
   });
 
   showToast(`❌ ${noti.fromName}님 ${noti.typeLabel} 미승인 처리`);
