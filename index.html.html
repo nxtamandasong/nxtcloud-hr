@@ -192,11 +192,66 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
 .lhi-type{font-size:14px;font-weight:600}
 .lhi-date{font-size:12px;color:var(--text2)}
 .lhi-days{font-size:18px;font-weight:700;color:var(--cyan)}
+/* ── LEAVE TYPE BUTTONS ── */
+.leave-type-btn{
+  background:var(--surface2);border:2px solid var(--border2);border-radius:10px;
+  color:var(--text2);font-size:13px;font-weight:600;padding:10px 6px;cursor:pointer;
+  font-family:inherit;transition:all 0.15s;text-align:center;
+}
+.leave-type-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.leave-type-btn.active{border-color:var(--cyan);background:var(--cyan-dim);color:var(--cyan);box-shadow:0 0 0 3px var(--cyan-glow)}
+.leave-type-btn.leave-type-free{border-color:var(--border2)}
+.leave-type-btn.leave-type-free:hover{border-color:var(--green);color:var(--green)}
+.leave-type-btn.leave-type-free.active{border-color:var(--green);background:rgba(16,185,129,0.1);color:var(--green);box-shadow:0 0 0 3px rgba(16,185,129,0.2)}
+
 .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--green);
   border-radius:12px;padding:14px 20px;font-size:14px;color:var(--green);font-weight:500;
   box-shadow:0 8px 32px rgba(0,0,0,0.4);transform:translateY(80px);opacity:0;
   transition:all 0.3s ease;z-index:999}
 .toast.show{transform:translateY(0);opacity:1}
+
+/* ─── ADMIN ─── */
+.admin-tab{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;
+  padding:8px 18px;color:var(--text2);font-size:13px;font-weight:600;cursor:pointer;
+  font-family:inherit;transition:all .15s}
+.admin-tab:hover{border-color:var(--cyan);color:var(--cyan)}
+.admin-tab.active{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan)}
+.admin-table{width:100%;border-collapse:collapse;font-size:13px}
+.admin-table th{padding:10px 14px;background:var(--surface2);color:var(--text2);
+  font-weight:600;text-align:center;border-bottom:1px solid var(--border2);font-size:12px}
+.admin-table th:first-child{text-align:left}
+.admin-table td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:center}
+.admin-table td:first-child{text-align:left}
+.admin-table tr:last-child td{border-bottom:none}
+.admin-table tr:hover td{background:var(--surface2)}
+.dept-chip{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.filter-btn{background:var(--surface2);border:1px solid var(--border2);border-radius:20px;
+  padding:5px 14px;font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;
+  font-family:inherit;transition:all .15s}
+.filter-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.filter-btn.active{background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan)}
+.id-hint-item{padding:10px 16px;cursor:pointer;display:flex;align-items:center;gap:10px;
+  font-size:13px;transition:background .1s;border-bottom:1px solid var(--border)}
+.id-hint-item:last-child{border-bottom:none}
+.id-hint-item:hover{background:var(--cyan-dim)}
+
+/* ─── REQ STAR & FILE UPLOAD ─── */
+.req-star{color:#ef4444;font-size:13px}
+.file-upload-area{
+  border:2px dashed var(--border2);border-radius:10px;padding:24px 16px;text-align:center;
+  cursor:pointer;transition:all .15s;background:var(--surface2)
+}
+.file-upload-area:hover{border-color:var(--cyan);background:var(--cyan-dim)}
+.file-upload-icon{font-size:24px;margin-bottom:6px}
+.file-upload-text{font-size:13px;color:var(--text2);font-weight:600}
+.file-upload-hint{font-size:11px;color:var(--text3);margin-top:4px}
+.exec-select-btn{
+  background:var(--surface2);border:2px solid var(--border2);border-radius:10px;
+  padding:10px 6px;cursor:pointer;font-family:inherit;font-size:12px;font-weight:600;
+  color:var(--text2);transition:all .15s;text-align:center;
+}
+.exec-select-btn:hover{border-color:#7c3aed;color:#a78bfa}
+.exec-select-btn.active{border-color:#7c3aed;background:rgba(124,58,237,0.12);color:#a78bfa;box-shadow:0 0 0 3px rgba(124,58,237,0.15)}
 
 /* ─── FUTURE FEATURES ─── */
 .future-banner{background:linear-gradient(135deg,rgba(0,212,255,0.08),rgba(0,168,204,0.04));
@@ -227,27 +282,23 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
       <div class="login-logo-text">Nxt<span>Cloud</span></div>
     </div>
     <h2 class="login-title">직원 로그인</h2>
-    <p class="login-sub">인사관리 시스템에 오신 걸 환영합니다</p>
+    <p class="login-sub">사원 ID와 비밀번호를 입력하세요</p>
 
-    <div class="login-label">직원 선택</div>
-    <div class="emp-grid" id="empGrid">
-      <div class="emp-card" data-emp="song" onclick="selectEmp('song',this)">
-        <div class="emp-avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706)">다</div>
-        <div class="emp-card-name">송다미</div>
-        <div class="emp-card-role">NxtCloud</div>
-      </div>
-      <div class="emp-card" data-emp="park" onclick="selectEmp('park',this)">
-        <div class="emp-avatar" style="background:linear-gradient(135deg,#3b82f6,#2563eb)">진</div>
-        <div class="emp-card-name">박진성</div>
-        <div class="emp-card-role">NxtCloud</div>
-      </div>
-    </div>
+    <div class="login-label" style="margin-top:4px">사원 ID</div>
+    <input class="pw-input" type="text" id="empIdInput" placeholder="예: Amanda, Teo, Glen …"
+      autocomplete="off" onkeydown="if(event.key==='Enter')document.getElementById('pwInput').focus()"
+      oninput="showIdHints(this.value)">
 
-    <div class="login-label">비밀번호</div>
-    <input class="pw-input" type="password" id="pwInput" placeholder="비밀번호를 입력하세요" onkeydown="if(event.key==='Enter')doLogin()">
-    <p class="pw-hint">데모: 송다미 → 1234 &nbsp;|&nbsp; 박진성 → 5678</p>
+    <!-- 자동완성 힌트 -->
+    <div id="idHintBox" style="display:none;margin:-4px 0 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;overflow:hidden;max-height:200px;overflow-y:auto"></div>
+
+    <div class="login-label" style="margin-top:8px">비밀번호</div>
+    <input class="pw-input" type="password" id="pwInput" placeholder="초기 비밀번호: 1234"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <p class="pw-hint" style="margin-bottom:20px">초기 비밀번호는 모두 <strong style="color:var(--cyan)">1234</strong> 입니다</p>
+
     <button class="login-btn" onclick="doLogin()">로그인 →</button>
-    <div class="login-error" id="loginError">선택한 직원 또는 비밀번호를 확인해주세요.</div>
+    <div class="login-error" id="loginError">사원 ID 또는 비밀번호가 올바르지 않습니다.</div>
   </div>
 </div>
 
@@ -287,6 +338,11 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
       </div>
       <div class="nav-item" onclick="navigate('profile',this)">
         <span class="nav-icon">👤</span> 내 정보
+      </div>
+      <!-- 관리자 전용 -->
+      <div class="nav-section" id="adminNavSection" style="display:none">관리자</div>
+      <div class="nav-item" id="adminNavItem" style="display:none" onclick="navigate('admin',this)">
+        <span class="nav-icon">🛡️</span> 관리자 현황
       </div>
     </div>
 
@@ -341,38 +397,131 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
       <!-- ── LEAVE REQUEST ── -->
       <div class="page" id="page-request">
         <div class="page-title">휴가 신청</div>
-        <div class="page-sub">연차 및 기타 휴가를 신청하세요</div>
+        <div class="page-sub">휴가 종류에 따라 추가 정보가 자동으로 표시됩니다</div>
+
+        <!-- 유형 안내 배너 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+          <div style="background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.18);border-radius:10px;padding:13px 16px">
+            <div style="font-size:11px;font-weight:700;color:var(--cyan);letter-spacing:.08em;margin-bottom:6px">📉 연차 차감</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.8">2시간 · 4시간 · 6시간 · 8시간(1일)</div>
+          </div>
+          <div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.18);border-radius:10px;padding:13px 16px">
+            <div style="font-size:11px;font-weight:700;color:var(--green);letter-spacing:.08em;margin-bottom:6px">✅ 연차 미차감</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.8">대체휴가 · 경조사 · 공가</div>
+          </div>
+        </div>
 
         <div class="card">
           <div class="card-title"><span class="card-title-icon">✏️</span> 신청서 작성</div>
+
           <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label">휴가 종류</label>
-              <select class="form-select" id="leaveType">
-                <option value="annual">연차 휴가</option>
-                <option value="half_am">반차 (오전)</option>
-                <option value="half_pm">반차 (오후)</option>
-                <option value="sick">병가</option>
-                <option value="special">경조사 휴가</option>
+
+            <!-- ① 휴가 종류 드롭다운 -->
+            <div class="form-group full">
+              <label class="form-label">휴가 종류 <span class="req-star">*</span></label>
+              <select class="form-select" id="leaveTypeSelect" onchange="onLeaveTypeChange()">
+                <optgroup label="📉 연차 차감">
+                  <option value="h2">2시간 휴가</option>
+                  <option value="h4">4시간 휴가</option>
+                  <option value="h6">6시간 휴가</option>
+                  <option value="h8">8시간 휴가 (1일)</option>
+                </optgroup>
+                <optgroup label="✅ 연차 미차감">
+                  <option value="substitute">대체휴가</option>
+                  <option value="special">경조사</option>
+                  <option value="official">공가</option>
+                </optgroup>
               </select>
             </div>
-            <div class="form-group">
-              <label class="form-label">신청 일수</label>
-              <input class="form-input" type="number" id="leaveDays" min="0.5" step="0.5" value="1">
+
+            <!-- ② 공통: 날짜 -->
+            <div class="form-group" id="fieldDate">
+              <label class="form-label">휴가 날짜 <span class="req-star">*</span></label>
+              <input class="form-input" type="date" id="leaveDate" value="2026-03-12" onchange="calcEndTime()">
             </div>
-            <div class="form-group">
-              <label class="form-label">시작일</label>
-              <input class="form-input" type="date" id="leaveStart" value="2026-03-12">
+
+            <!-- ③ 연차차감: 시작시간 -->
+            <div class="form-group" id="fieldStartTime">
+              <label class="form-label">시작 시간 <span style="font-size:11px;color:var(--text3);font-weight:400">(08:00 이후)</span> <span class="req-star">*</span></label>
+              <input class="form-input" type="time" id="leaveStartTime" value="09:00" min="08:00" step="3600" onchange="calcEndTime()">
             </div>
-            <div class="form-group">
-              <label class="form-label">종료일</label>
-              <input class="form-input" type="date" id="leaveEnd" value="2026-03-12">
+
+            <!-- ④ 연차차감: 종료시간(자동) -->
+            <div class="form-group" id="fieldEndTime">
+              <label class="form-label">종료 시간 <span style="font-size:11px;color:var(--cyan);font-weight:600">⚡ 자동계산</span></label>
+              <input class="form-input" type="time" id="leaveEndTime" readonly style="background:var(--surface2);color:var(--cyan);font-weight:600;cursor:not-allowed">
             </div>
-            <div class="form-group full">
-              <label class="form-label">사유</label>
-              <textarea class="form-textarea" id="leaveReason" placeholder="휴가 사유를 입력하세요..."></textarea>
+
+            <!-- ⑤ 연차차감: 차감일수 표시 -->
+            <div class="form-group" id="fieldDeduct">
+              <label class="form-label">차감 연차</label>
+              <div id="leaveDeductDisplay" style="background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:11px 14px;color:var(--cyan);font-weight:700;font-size:14px">—</div>
+            </div>
+
+            <!-- ⑥ 대체휴가: 원래 근무일 -->
+            <div class="form-group" id="fieldSubstituteDate" style="display:none">
+              <label class="form-label">대체 근무일 <span style="font-size:11px;color:var(--text3)">어떤 날 근무의 대체인가요?</span> <span class="req-star">*</span></label>
+              <input class="form-input" type="date" id="substituteWorkDate">
+            </div>
+
+            <!-- ⑦ 경조사/공가: 첨부파일 -->
+            <div class="form-group full" id="fieldAttachment" style="display:none">
+              <label class="form-label">증빙 서류 첨부 <span style="font-size:11px;color:var(--text3)">(필수)</span> <span class="req-star">*</span></label>
+              <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
+                <div class="file-upload-icon">📎</div>
+                <div class="file-upload-text">클릭하여 파일 선택</div>
+                <div class="file-upload-hint" id="fileUploadHint">경조사 확인서 또는 공가 관련 서류</div>
+              </div>
+              <input type="file" id="fileInput" style="display:none" accept=".pdf,.jpg,.jpeg,.png" onchange="onFileSelected()">
+              <div id="fileSelected" style="display:none;margin-top:8px;padding:10px 14px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:8px;font-size:13px;color:var(--green);display:flex;align-items:center;gap:8px">
+                <span>📄</span><span id="fileNameDisplay"></span>
+                <button onclick="clearFile()" style="margin-left:auto;background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px">✕</button>
+              </div>
+            </div>
+
+          </div><!-- /form-grid -->
+
+          <!-- 점심 포함 안내 -->
+          <div id="lunchNotice" style="display:none;margin:8px 0 12px;padding:10px 14px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:8px;font-size:12px;color:var(--yellow)">
+            ⚠️ 점심시간(12:00~13:00)이 포함되어 종료시간이 1시간 추가되었습니다.
+          </div>
+
+          <!-- 잔여 연차 미리보기 -->
+          <div id="remainingDisplay" style="margin-bottom:16px;padding:12px 16px;background:var(--surface2);border-radius:10px;border:1px solid var(--border2);font-size:13px;color:var(--text2)">
+            잔여 연차: <strong id="remainingVal" style="color:var(--cyan)">—</strong>
+          </div>
+
+          <!-- 사유 -->
+          <div class="form-group" style="margin-bottom:16px">
+            <label class="form-label">사유 <span class="req-star">*</span></label>
+            <textarea class="form-textarea" id="leaveReason" placeholder="휴가 사유를 입력하세요..."></textarea>
+          </div>
+
+          <!-- ⑧ 결재자 선택 -->
+          <div id="approverSection" style="margin-bottom:20px;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border2)">
+            <div style="font-size:12px;font-weight:700;color:var(--text3);letter-spacing:.08em;margin-bottom:12px">📋 결재 라인</div>
+            <!-- 팀원: 팀장 자동지정 -->
+            <div id="approverMember" style="display:none">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px" id="approverAvatar"></div>
+                <div>
+                  <div style="font-size:13px;font-weight:600" id="approverName">—</div>
+                  <div style="font-size:11px;color:var(--text3)" id="approverRole">팀장 (최종 결재자)</div>
+                </div>
+                <span class="badge badge-cyan" style="margin-left:auto">최종 결재자</span>
+              </div>
+            </div>
+            <!-- 팀장: 경영진 선택 -->
+            <div id="approverLead" style="display:none">
+              <label class="form-label" style="margin-bottom:8px">경영진 결재자 선택 <span class="req-star">*</span></label>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="execGrid"></div>
+            </div>
+            <!-- 경영진: 결재 불필요 안내 -->
+            <div id="approverExec" style="display:none">
+              <div style="font-size:13px;color:var(--text2)">✅ 경영진은 별도 결재 없이 자동 승인됩니다.</div>
             </div>
           </div>
+
           <button class="submit-btn" onclick="submitLeave()">신청하기 →</button>
         </div>
 
@@ -418,6 +567,30 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
         </div>
       </div>
 
+      <!-- ── ADMIN ── -->
+      <div class="page" id="page-admin">
+        <div class="page-title">🛡️ 관리자 현황</div>
+        <div class="page-sub">전 임직원 연차 잔여 및 휴가 신청 현황</div>
+
+        <!-- 탭 -->
+        <div style="display:flex;gap:8px;margin-bottom:20px">
+          <button class="admin-tab active" id="adminTab1" onclick="switchAdminTab('leave')">📊 연차 잔여현황</button>
+          <button class="admin-tab" id="adminTab2" onclick="switchAdminTab('requests')">📋 신청현황</button>
+        </div>
+
+        <!-- 연차 잔여현황 탭 -->
+        <div id="adminLeavePanel">
+          <!-- 부서 필터 -->
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px" id="deptFilter"></div>
+          <div id="adminLeaveTable"></div>
+        </div>
+
+        <!-- 신청현황 탭 -->
+        <div id="adminRequestPanel" style="display:none">
+          <div id="adminRequestTable"></div>
+        </div>
+      </div>
+
     </div><!-- /content -->
   </div><!-- /layout -->
 </div><!-- /mainApp -->
@@ -428,24 +601,97 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
 // ══════════════════════════════════════════
 //  DATA
 // ══════════════════════════════════════════
-const TODAY = new Date('2026-03-11');
+const TODAY = new Date();
 
-const EMPLOYEES = {
-  song: {
-    id:'song', name:'송다미', initials:'다',
-    color:'linear-gradient(135deg,#f59e0b,#d97706)',
-    hireDate: new Date('2026-02-02'),
-    dept:'NxtCloud', role:'직원',
-    password:'1234'
-  },
-  park: {
-    id:'park', name:'박진성', initials:'진',
-    color:'linear-gradient(135deg,#3b82f6,#2563eb)',
-    hireDate: new Date('2024-04-01'),
-    dept:'NxtCloud', role:'직원',
-    password:'5678'
-  }
+// ── Google Apps Script API ──
+const API_URL = 'https://script.google.com/a/macros/nxtcloud.kr/s/AKfycbzGkET9BJd7s4JU31JCZePqQ-Q31FVLGrenVI1nuMGEOJv5IL_Zh5FyaPMxYPsd7TqS/exec';
+
+// 부서별 색상
+const DEPT_COLOR_MAP = {
+  '경영진':    'linear-gradient(135deg,#7c3aed,#5b21b6)',
+  '경영지원팀':'linear-gradient(135deg,#f59e0b,#d97706)',
+  '교육팀':    'linear-gradient(135deg,#059669,#047857)',
+  '개발팀':    'linear-gradient(135deg,#f97316,#ea580c)',
+  'AI솔루션팀':'linear-gradient(135deg,#8b5cf6,#7c3aed)',
+  '파트너십팀':'linear-gradient(135deg,#dc2626,#b91c1c)',
 };
+
+// 직급→role 매핑
+const GRADE_ROLE_MAP = { '경영진':'executive', '팀장':'lead', '팀원':'member' };
+
+// 관리자 권한 부여 목록 (사원ID)
+const ADMIN_IDS = ['teo','oliver','amanda','jack'];
+
+// 팀원→팀장 결재자 매핑
+const APPROVER_MAP = {
+  ella:'glen', karin:'glen',
+  lucy:'jin',  eren:'jin',
+  brad:'jayden',
+  sancho:'sik', kevin:'sik',
+};
+
+// 시트에서 불러온 직원 데이터 (로그인 후 채워짐)
+let EMPLOYEES = {};
+let EXECUTIVES = ['teo','oliver','jack'];
+let NICK_MAP = {};
+
+// API 호출 헬퍼
+async function apiGet(params) {
+  const url = API_URL + '?' + new URLSearchParams(params);
+  const res = await fetch(url);
+  return res.json();
+}
+async function apiPost(body) {
+  const res = await fetch(API_URL, {
+    method:'POST',
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
+
+// 직원 데이터 시트에서 로드
+async function loadEmployees() {
+  try {
+    const data = await apiGet({ action:'getEmployees' });
+    if (data.status !== 'ok') throw new Error(data.message);
+
+    EMPLOYEES = {};
+    data.employees.forEach(e => {
+      const role = GRADE_ROLE_MAP[e.grade] || 'member';
+      // 이니셜: 이름 마지막 글자
+      const initials = e.name ? e.name.slice(-1) : e.nickname.slice(0,1);
+      EMPLOYEES[e.id] = {
+        id:       e.id,
+        name:     e.name,
+        nickname: e.nickname,
+        initials,
+        color:    DEPT_COLOR_MAP[e.dept] || 'linear-gradient(135deg,#475569,#334155)',
+        hireDate: new Date(e.hireDate),
+        dept:     e.dept,
+        role,
+        admin:    ADMIN_IDS.includes(e.id),
+        password: e.password || '1234',
+        approver: APPROVER_MAP[e.id] || null,
+        phone:    e.phone,
+        email:    e.email,
+        status:   e.status,
+      };
+    });
+
+    EXECUTIVES = Object.values(EMPLOYEES)
+      .filter(e => e.role === 'executive')
+      .map(e => e.id);
+
+    NICK_MAP = Object.fromEntries(
+      Object.values(EMPLOYEES).map(e => [e.nickname.toLowerCase().split('(')[0].trim(), e.id])
+    );
+
+    return true;
+  } catch(err) {
+    console.error('직원 데이터 로드 실패:', err);
+    return false;
+  }
+}
 
 // ══════════════════════════════════════════
 //  LEAVE CALCULATION (회계연도 기준)
@@ -529,30 +775,122 @@ let chatHistory = {}; // { empId: [{role,content}] }
 // ══════════════════════════════════════════
 //  LOGIN
 // ══════════════════════════════════════════
-function selectEmp(id, el) {
-  selectedEmpId = id;
-  document.querySelectorAll('.emp-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
+function showIdHints(val) {
+  const box = document.getElementById('idHintBox');
+  if (!val.trim()) { box.style.display='none'; return; }
+  const q = val.toLowerCase();
+  const matches = Object.values(EMPLOYEES).filter(e =>
+    e.nickname.toLowerCase().includes(q) ||
+    e.name.includes(val) ||
+    e.id.includes(q)
+  ).slice(0, 6);
+  if (!matches.length) { box.style.display='none'; return; }
+  box.style.display = 'block';
+  box.innerHTML = matches.map(e => `
+    <div class="id-hint-item" onclick="pickId('${e.id}')">
+      <div style="width:28px;height:28px;border-radius:50%;background:${e.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">${e.initials}</div>
+      <div>
+        <div style="font-weight:600">${e.nickname} <span style="color:var(--text3);font-weight:400">${e.name}</span></div>
+        <div style="font-size:11px;color:var(--text3)">${e.dept} · ${e.role === 'executive' ? 'C-Level' : e.role === 'lead' ? '팀장' : '팀원'}</div>
+      </div>
+    </div>`).join('');
 }
-function doLogin() {
-  const pw = document.getElementById('pwInput').value;
-  const errEl = document.getElementById('loginError');
+
+function pickId(id) {
+  const e = EMPLOYEES[id];
+  document.getElementById('empIdInput').value = e.nickname.split('(')[0].trim();
+  document.getElementById('idHintBox').style.display = 'none';
+  document.getElementById('pwInput').focus();
+}
+
+function resolveEmpId(input) {
+  const q = input.toLowerCase().trim();
+  if (EMPLOYEES[q]) return q;
+  if (NICK_MAP[q]) return NICK_MAP[q];
+  const found = Object.values(EMPLOYEES).find(e =>
+    e.nickname.toLowerCase().startsWith(q) || e.id === q
+  );
+  return found ? found.id : null;
+}
+
+async function doLogin() {
+  const inputId = document.getElementById('empIdInput').value.trim();
+  const pw      = document.getElementById('pwInput').value;
+  const errEl   = document.getElementById('loginError');
+  const btn     = document.querySelector('.login-btn');
   errEl.style.display = 'none';
-  if (!selectedEmpId) { errEl.textContent='직원을 선택해주세요.'; errEl.style.display='block'; return; }
-  const emp = EMPLOYEES[selectedEmpId];
-  if (pw !== emp.password) { errEl.textContent='비밀번호가 틀렸습니다.'; errEl.style.display='block'; return; }
+  document.getElementById('idHintBox').style.display = 'none';
+
+  if (!inputId) { errEl.textContent='사원 ID를 입력해주세요.'; errEl.style.display='block'; return; }
+
+  // 로딩 표시
+  btn.textContent = '⏳ 접속 중...';
+  btn.disabled = true;
+
+  // 직원 데이터가 없으면 시트에서 로드
+  if (Object.keys(EMPLOYEES).length === 0) {
+    const ok = await loadEmployees();
+    if (!ok) {
+      errEl.textContent = '⚠️ 서버 연결 실패. 잠시 후 다시 시도해주세요.';
+      errEl.style.display = 'block';
+      btn.textContent = '로그인 →'; btn.disabled = false;
+      return;
+    }
+  }
+
+  btn.textContent = '로그인 →'; btn.disabled = false;
+
+  const empId = resolveEmpId(inputId);
+  if (!empId) { errEl.textContent='사원 ID를 찾을 수 없습니다.'; errEl.style.display='block'; return; }
+  const emp = EMPLOYEES[empId];
+  if (pw !== emp.password) { errEl.textContent='비밀번호가 올바르지 않습니다.'; errEl.style.display='block'; return; }
+
   currentEmp = emp;
   if (!leaveRequests[emp.id]) leaveRequests[emp.id] = [];
   if (!chatHistory[emp.id])   chatHistory[emp.id]   = [];
+
+  // 시트에서 기존 신청내역 로드
+  loadRequestsFromSheet(emp.id);
+
   initApp();
 }
+
+async function loadRequestsFromSheet(empId) {
+  try {
+    const data = await apiGet({ action:'getRequests', empId });
+    if (data.status === 'ok' && data.requests.length) {
+      // 시트 데이터를 앱 형식으로 변환
+      leaveRequests[empId] = data.requests.map(r => ({
+        id:          r.reqNo,
+        typeKey:     '',
+        typeLabel:   r.typeLabel,
+        deduct:      parseFloat(r.deduct) || 0,
+        annual:      parseFloat(r.deduct) > 0,
+        date:        r.startDate,
+        startTime:   '',
+        endTime:     '',
+        reason:      r.reason,
+        approverName: r.approver,
+        approverLabel: r.approver,
+        status:      r.status,
+      }));
+      // 대시보드 새로고침
+      if (document.getElementById('page-dashboard').classList.contains('active')) {
+        renderDashboard();
+      }
+    }
+  } catch(e) { console.warn('신청내역 로드 실패:', e); }
+}
+
 function doLogout() {
-  currentEmp = null; selectedEmpId = null;
+  currentEmp = null;
+  EMPLOYEES = {}; // 로그아웃 시 초기화 → 다음 로그인 시 시트에서 재로드
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('empIdInput').value = '';
   document.getElementById('pwInput').value = '';
-  document.querySelectorAll('.emp-card').forEach(c => c.classList.remove('selected'));
-  document.getElementById('loginError').style.display='none';
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('idHintBox').style.display = 'none';
 }
 
 // ══════════════════════════════════════════
@@ -562,10 +900,14 @@ function initApp() {
   document.getElementById('loginScreen').style.display = 'none';
   document.getElementById('mainApp').style.display = 'flex';
 
-  // Topbar
-  document.getElementById('topbarName').textContent = currentEmp.name;
+  document.getElementById('topbarName').textContent = currentEmp.nickname.split('(')[0];
   document.getElementById('topbarAvatar').style.background = currentEmp.color;
   document.getElementById('topbarAvatar').textContent = currentEmp.initials;
+
+  // 관리자 메뉴 표시
+  const isAdmin = currentEmp.admin;
+  document.getElementById('adminNavSection').style.display = isAdmin ? '' : 'none';
+  document.getElementById('adminNavItem').style.display    = isAdmin ? '' : 'none';
 
   navigate('dashboard', document.querySelector('.nav-item'));
 }
@@ -579,14 +921,15 @@ function navigate(pageId, navEl) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + pageId).classList.add('active');
 
-  const titles = {dashboard:'대시보드', leave:'연차 관리', request:'휴가 신청', chat:'HR 챗봇', profile:'내 정보'};
+  const titles = {dashboard:'대시보드', leave:'연차 관리', request:'휴가 신청', chat:'HR 챗봇', profile:'내 정보', admin:'관리자 현황'};
   document.getElementById('topbarPage').textContent = titles[pageId] || '';
 
   if (pageId === 'dashboard') renderDashboard();
   if (pageId === 'leave')     renderLeaveDetail();
   if (pageId === 'profile')   renderProfile();
-  if (pageId === 'request')   renderLeaveHistory();
+  if (pageId === 'request')   { renderLeaveHistory(); onLeaveTypeChange(); }
   if (pageId === 'chat')      renderChat();
+  if (pageId === 'admin')     renderAdmin();
 }
 
 // ══════════════════════════════════════════
@@ -726,61 +1069,412 @@ function renderProfile() {
 }
 
 // ══════════════════════════════════════════
-//  LEAVE REQUEST
+//  ADMIN PAGE
 // ══════════════════════════════════════════
-function submitLeave() {
-  const type = document.getElementById('leaveType').value;
-  const days = parseFloat(document.getElementById('leaveDays').value);
-  const start = document.getElementById('leaveStart').value;
-  const end   = document.getElementById('leaveEnd').value;
-  const reason = document.getElementById('leaveReason').value;
+const DEPT_COLORS = {
+  '경영진':'#7c3aed','경영지원팀':'#2563eb','교육팀':'#059669',
+  '개발팀':'#d97706','AI솔루션팀':'#7c3aed','파트너십팀':'#dc2626'
+};
+let adminDeptFilter = 'all';
+let adminTabMode = 'leave';
 
-  const typeLabels = {annual:'연차 휴가', half_am:'반차(오전)', half_pm:'반차(오후)', sick:'병가', special:'경조사'};
-  const leaveData = calcLeave(currentEmp);
-  const remaining = getTotalRemaining(leaveData);
+function switchAdminTab(tab) {
+  adminTabMode = tab;
+  document.getElementById('adminTab1').classList.toggle('active', tab==='leave');
+  document.getElementById('adminTab2').classList.toggle('active', tab==='requests');
+  document.getElementById('adminLeavePanel').style.display   = tab==='leave'     ? '' : 'none';
+  document.getElementById('adminRequestPanel').style.display = tab==='requests'  ? '' : 'none';
+  if (tab==='requests') renderAdminRequests();
+}
 
-  if (['annual','half_am','half_pm'].includes(type) && days > remaining) {
-    alert(`잔여 연차(${remaining}일)가 부족합니다.`); return;
+function renderAdmin() {
+  renderDeptFilter();
+  renderAdminLeave();
+}
+
+function renderDeptFilter() {
+  const depts = ['all','경영진','경영지원팀','교육팀','개발팀','AI솔루션팀','파트너십팀'];
+  document.getElementById('deptFilter').innerHTML = depts.map(d =>
+    `<button class="filter-btn${adminDeptFilter===d?' active':''}" onclick="setDeptFilter('${d}')">
+      ${d==='all'?'전체':d}
+    </button>`
+  ).join('');
+}
+
+function setDeptFilter(dept) {
+  adminDeptFilter = dept;
+  renderDeptFilter();
+  renderAdminLeave();
+}
+
+function renderAdminLeave() {
+  const emps = Object.values(EMPLOYEES).filter(e =>
+    adminDeptFilter === 'all' || e.dept === adminDeptFilter
+  );
+
+  // 요약 통계
+  const totalLeave = emps.reduce((s,e) => s + getTotalRemaining(calcLeave(e)), 0);
+  const usedLeave  = emps.reduce((s,e) => s + calcLeave(e).reduce((ss,d)=>ss+d.used,0), 0);
+
+  let html = `
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+    <div class="stat-card"><div class="stat-label">👥 조회 인원</div><div class="stat-value cyan">${emps.length}<span style="font-size:16px;color:var(--text2)"> 명</span></div></div>
+    <div class="stat-card"><div class="stat-label">🗓 총 잔여 연차</div><div class="stat-value" style="color:var(--green)">${Math.round(totalLeave*10)/10}<span style="font-size:16px;color:var(--text2)"> 일</span></div></div>
+    <div class="stat-card"><div class="stat-label">✅ 총 사용 연차</div><div class="stat-value yellow">${Math.round(usedLeave*10)/10}<span style="font-size:16px;color:var(--text2)"> 일</span></div></div>
+  </div>
+  <div class="card" style="overflow-x:auto">
+  <table class="admin-table">
+    <thead><tr>
+      <th>직원</th><th>부서</th><th>직책</th><th>입사일</th>
+      <th>2026년 발생</th><th>사용</th><th>잔여</th><th>신청건수</th>
+    </tr></thead>
+    <tbody>`;
+
+  emps.forEach(e => {
+    const ld = calcLeave(e);
+    const remaining = getTotalRemaining(ld);
+    const used = ld.reduce((s,d)=>s+d.used,0);
+    const gen2026 = ld.find(d=>d.year===2026)?.generated || 0;
+    const reqCount = (leaveRequests[e.id] || []).length;
+    const dColor = DEPT_COLORS[e.dept] || '#666';
+    const roleLabel = e.role==='executive' ? 'C-Level' : e.role==='lead' ? '팀장' : '팀원';
+    const remainColor = remaining >= 10 ? 'var(--green)' : remaining >= 5 ? 'var(--yellow)' : 'var(--red)';
+
+    html += `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:28px;height:28px;border-radius:50%;background:${e.color};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${e.initials}</div>
+          <div>
+            <div style="font-weight:600;font-size:13px">${e.nickname.split('(')[0]}</div>
+            <div style="font-size:11px;color:var(--text3)">${e.name}</div>
+          </div>
+          ${e.admin ? '<span class="badge" style="font-size:9px;padding:1px 5px;background:rgba(124,58,237,0.15);color:#a78bfa;border-radius:4px;margin-left:2px">관리자</span>' : ''}
+        </div>
+      </td>
+      <td><span class="dept-chip" style="background:${dColor}22;color:${dColor}">${e.dept}</span></td>
+      <td style="color:var(--text2)">${roleLabel}</td>
+      <td style="color:var(--text3);font-size:12px">${e.hireDate.toISOString().slice(0,10)}</td>
+      <td style="font-weight:600">${gen2026}</td>
+      <td>${used}</td>
+      <td style="font-weight:700;color:${remainColor}">${Math.round(remaining*10)/10}</td>
+      <td>${reqCount > 0 ? `<span class="badge badge-yellow">${reqCount}건</span>` : '<span style="color:var(--text3)">-</span>'}</td>
+    </tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  document.getElementById('adminLeaveTable').innerHTML = html;
+}
+
+function renderAdminRequests() {
+  const allReqs = [];
+  Object.values(EMPLOYEES).forEach(e => {
+    (leaveRequests[e.id] || []).forEach(r => allReqs.push({...r, emp: e}));
+  });
+  allReqs.sort((a,b) => b.id - a.id);
+
+  if (!allReqs.length) {
+    document.getElementById('adminRequestTable').innerHTML =
+      '<div class="card" style="text-align:center;padding:40px;color:var(--text3)">아직 휴가 신청 내역이 없습니다.</div>';
+    return;
   }
 
-  const req = { id: Date.now(), type, typeLabel: typeLabels[type], days, start, end, reason, status:'승인대기' };
-  leaveRequests[currentEmp.id].push(req);
+  let html = `<div class="card" style="overflow-x:auto"><table class="admin-table">
+    <thead><tr>
+      <th>신청자</th><th>부서</th><th>휴가종류</th><th>날짜</th><th>시간</th><th>차감</th><th>결재자</th><th>상태</th>
+    </tr></thead><tbody>`;
 
-  // 사용 연차 반영
-  if (['annual','half_am','half_pm'].includes(type)) {
-    const latestValid = leaveData.filter(d=>!d.expired).reverse();
-    // 이 예시에선 단순히 가장 오래된 유효 연도부터 차감
-    let remaining2 = days;
-    for (const d of leaveData.filter(x=>!x.expired)) {
+  allReqs.forEach(r => {
+    const e = r.emp;
+    const dColor = DEPT_COLORS[e.dept] || '#666';
+    const timeInfo = r.annual ? `${r.startTime}~${r.endTime}` : '종일';
+    const deductBadge = r.annual
+      ? `<span style="color:var(--cyan);font-weight:600">-${r.deduct}일</span>`
+      : `<span style="color:var(--green);font-size:11px">미차감</span>`;
+    const statusColor = r.status==='자동승인'?'badge-green':'badge-yellow';
+    html += `<tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:24px;height:24px;border-radius:50%;background:${e.color};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff">${e.initials}</div>
+          <span style="font-weight:600">${e.nickname.split('(')[0]}</span>
+        </div>
+      </td>
+      <td><span class="dept-chip" style="background:${dColor}22;color:${dColor}">${e.dept}</span></td>
+      <td style="font-weight:600">${r.typeLabel}</td>
+      <td style="font-size:12px">${r.date}</td>
+      <td style="font-size:12px;color:var(--text2)">${timeInfo}</td>
+      <td>${deductBadge}</td>
+      <td style="font-size:12px;color:var(--text2)">${r.approverLabel}</td>
+      <td><span class="badge ${statusColor}">${r.status}</span></td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>`;
+  document.getElementById('adminRequestTable').innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+//  LEAVE REQUEST
+// ══════════════════════════════════════════
+const LEAVE_TYPES = {
+  h2:         { label:'2시간 휴가',      hours:2, deduct:2/8,   annual:true  },
+  h4:         { label:'4시간 휴가',      hours:4, deduct:0.5,   annual:true  },
+  h6:         { label:'6시간 휴가',      hours:6, deduct:6/8,   annual:true  },
+  h8:         { label:'8시간 휴가(1일)', hours:8, deduct:1,     annual:true  },
+  substitute: { label:'대체휴가',        hours:8, deduct:0,     annual:false },
+  special:    { label:'경조사',          hours:8, deduct:0,     annual:false },
+  official:   { label:'공가',            hours:8, deduct:0,     annual:false },
+};
+
+let selectedExecId = null;
+
+function onLeaveTypeChange() {
+  const type = document.getElementById('leaveTypeSelect').value;
+  const isAnnual = LEAVE_TYPES[type].annual;
+  const isSub    = type === 'substitute';
+  const needFile = type === 'special' || type === 'official';
+
+  // 시간 관련 필드 (연차차감만)
+  show('fieldStartTime', isAnnual);
+  show('fieldEndTime',   isAnnual);
+  show('fieldDeduct',    isAnnual);
+  show('lunchNotice',    false);
+
+  // 대체휴가 근무일
+  show('fieldSubstituteDate', isSub);
+
+  // 첨부파일
+  show('fieldAttachment', needFile);
+  if (needFile) {
+    document.getElementById('fileUploadHint').textContent =
+      type === 'special' ? '경조사 확인서 (청첩장, 부고 등)' : '공가 관련 서류 (공문, 소집 통보 등)';
+  }
+
+  // 잔여 연차 표시 (연차 차감만 의미있음)
+  document.getElementById('remainingDisplay').style.display = isAnnual ? 'block' : 'none';
+
+  if (isAnnual) calcEndTime();
+  else {
+    document.getElementById('leaveDeductDisplay').textContent = '없음 (연차 미차감)';
+  }
+
+  renderApproverSection();
+}
+
+function show(id, visible) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = visible ? '' : 'none';
+}
+
+// 결재 라인 렌더링
+function renderApproverSection() {
+  if (!currentEmp) return;
+  const role = currentEmp.role;
+
+  show('approverMember', role === 'member');
+  show('approverLead',   role === 'lead');
+  show('approverExec',   role === 'executive');
+
+  if (role === 'member') {
+    const lead = EMPLOYEES[currentEmp.approver];
+    const av = document.getElementById('approverAvatar');
+    av.style.background = lead.color;
+    av.textContent = lead.initials;
+    document.getElementById('approverName').textContent = `${lead.name} (${lead.nickname})`;
+    document.getElementById('approverRole').textContent = `${lead.dept} 팀장 · 최종 결재자`;
+  }
+
+  if (role === 'lead') {
+    selectedExecId = null;
+    const grid = document.getElementById('execGrid');
+    grid.innerHTML = EXECUTIVES.map(id => {
+      const e = EMPLOYEES[id];
+      return `<button class="exec-select-btn" id="exec-btn-${id}" onclick="selectExec('${id}')">
+        <div style="width:32px;height:32px;border-radius:50%;margin:0 auto 6px;background:${e.color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#fff">${e.initials}</div>
+        <div style="font-size:12px;font-weight:700">${e.name}</div>
+        <div style="font-size:10px;color:var(--text3)">${e.nickname} · ${e.role === 'executive' ? 'C-Level' : ''}</div>
+      </button>`;
+    }).join('');
+  }
+}
+
+function selectExec(id) {
+  selectedExecId = id;
+  document.querySelectorAll('.exec-select-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`exec-btn-${id}`)?.classList.add('active');
+}
+
+// 종료시간 자동계산 (점심 12~13 제외)
+function calcEndTime() {
+  const type = LEAVE_TYPES[document.getElementById('leaveTypeSelect')?.value];
+  if (!type || !type.annual) return;
+
+  const startVal = document.getElementById('leaveStartTime').value;
+  if (!startVal) return;
+
+  const [sh, sm] = startVal.split(':').map(Number);
+  const startMin  = sh * 60 + sm;
+  let rawEnd = startMin + type.hours * 60;
+
+  // 점심(720~780) 사이를 지나가면 +60분
+  const lunchIncluded = startMin < 720 && rawEnd > 720;
+  if (lunchIncluded) rawEnd += 60;
+
+  document.getElementById('leaveEndTime').value =
+    `${String(Math.floor(rawEnd/60)).padStart(2,'0')}:${String(rawEnd%60).padStart(2,'0')}`;
+  document.getElementById('lunchNotice').style.display = lunchIncluded ? 'block' : 'none';
+
+  // 차감 표시
+  const d = type.deduct;
+  document.getElementById('leaveDeductDisplay').textContent =
+    d === 1 ? '1일' : d === 0.5 ? '0.5일 (반차)' : `${type.hours/8}일 (${type.hours}시간)`;
+
+  // 잔여 연차 미리보기
+  if (currentEmp) {
+    const rem = getTotalRemaining(calcLeave(currentEmp));
+    const after = Math.round((rem - d) * 100) / 100;
+    document.getElementById('remainingVal').innerHTML =
+      `${rem}일 &nbsp;→&nbsp; 신청 후 <strong style="color:${after<0?'var(--red, #ef4444)':'var(--cyan)'}">${after}일</strong>`;
+  }
+}
+
+function onFileSelected() {
+  const file = document.getElementById('fileInput').files[0];
+  if (!file) return;
+  document.getElementById('fileNameDisplay').textContent = file.name;
+  document.getElementById('fileSelected').style.display = 'flex';
+  document.getElementById('fileUploadArea').style.display = 'none';
+}
+
+function clearFile() {
+  document.getElementById('fileInput').value = '';
+  document.getElementById('fileSelected').style.display = 'none';
+  document.getElementById('fileUploadArea').style.display = 'block';
+}
+
+function submitLeave() {
+  const typeKey = document.getElementById('leaveTypeSelect').value;
+  const type    = LEAVE_TYPES[typeKey];
+  const date    = document.getElementById('leaveDate').value;
+  const reason  = document.getElementById('leaveReason').value.trim();
+
+  // ── 유효성 검사 ──
+  if (!reason) { alert('사유를 입력해주세요.'); return; }
+
+  if (type.annual) {
+    const startTime = document.getElementById('leaveStartTime').value;
+    const endTime   = document.getElementById('leaveEndTime').value;
+    if (!startTime || !endTime) { alert('시작 시간을 선택해주세요.'); return; }
+
+    const leaveData = calcLeave(currentEmp);
+    const remaining = getTotalRemaining(leaveData);
+    if (type.deduct > remaining) {
+      alert(`잔여 연차(${remaining}일)가 부족합니다.\n신청: ${type.deduct}일`); return;
+    }
+
+    // 결재자 체크
+    if (currentEmp.role === 'lead' && !selectedExecId) {
+      alert('경영진 결재자를 선택해주세요.'); return;
+    }
+
+    // 연차 차감
+    let toDeduct = type.deduct;
+    for (const d of leaveData.filter(x => !x.expired)) {
       const avail = d.generated - d.used;
-      if (avail >= remaining2) { d.used += remaining2; remaining2 = 0; break; }
-      remaining2 -= avail; d.used += avail;
+      if (avail >= toDeduct) { d.used += toDeduct; break; }
+      toDeduct -= avail; d.used += avail;
     }
   }
 
-  showToast('✅ 휴가 신청이 완료되었습니다!');
+  if (typeKey === 'substitute') {
+    const subDate = document.getElementById('substituteWorkDate').value;
+    if (!subDate) { alert('대체 근무일을 입력해주세요.'); return; }
+  }
+
+  if (typeKey === 'special' || typeKey === 'official') {
+    const file = document.getElementById('fileInput').files[0];
+    if (!file) { alert('증빙 서류를 첨부해주세요.'); return; }
+  }
+
+  if (currentEmp.role === 'lead' && !selectedExecId) {
+    alert('경영진 결재자를 선택해주세요.'); return;
+  }
+
+  // ── 결재자 결정 ──
+  let approverName, approverLabel;
+  if (currentEmp.role === 'executive') {
+    approverName = '자동 승인'; approverLabel = '자동승인';
+  } else if (currentEmp.role === 'member') {
+    const lead = EMPLOYEES[currentEmp.approver];
+    approverName = lead.name; approverLabel = `${lead.dept} 팀장`;
+  } else { // lead
+    const exec = EMPLOYEES[selectedExecId];
+    approverName = exec.name; approverLabel = exec.nickname;
+  }
+
+  const startTime = type.annual ? document.getElementById('leaveStartTime').value : '08:00';
+  const endTime   = type.annual ? document.getElementById('leaveEndTime').value   : '17:00';
+  const subDate   = typeKey === 'substitute' ? document.getElementById('substituteWorkDate').value : null;
+  const fileName  = (typeKey === 'special' || typeKey === 'official')
+    ? document.getElementById('fileInput').files[0]?.name : null;
+
+  const req = {
+    id: Date.now(), typeKey, typeLabel: type.label, deduct: type.deduct,
+    annual: type.annual, date, startTime, endTime, reason,
+    subDate, fileName,
+    approverName, approverLabel,
+    status: currentEmp.role === 'executive' ? '자동승인' : '승인대기'
+  };
+
+  if (!leaveRequests[currentEmp.id]) leaveRequests[currentEmp.id] = [];
+  leaveRequests[currentEmp.id].push(req);
+
+  showToast(`✅ ${type.label} 신청 완료! → ${approverName}님께 승인 요청`);
   renderLeaveHistory();
   document.getElementById('leaveReason').value = '';
+  clearFile();
+  if (type.annual) calcEndTime();
+
+  // ── 구글 시트에 저장 ──
+  apiPost({
+    action:      'saveRequest',
+    empId:       currentEmp.id,
+    empName:     currentEmp.name,
+    dept:        currentEmp.dept,
+    typeLabel:   type.label,
+    date,
+    startTime,
+    endTime,
+    deduct:      type.deduct,
+    reason,
+    status:      req.status,
+    approverName,
+  }).then(res => {
+    if (res.status === 'ok') {
+      console.log('시트 저장 완료:', res.reqNo);
+    }
+  }).catch(e => console.warn('시트 저장 실패:', e));
 }
 
 function renderLeaveHistory() {
-  const reqs = leaveRequests[currentEmp.id] || [];
-  const el = document.getElementById('leaveHistoryList');
+  const reqs = leaveRequests[currentEmp?.id] || [];
+  const el   = document.getElementById('leaveHistoryList');
   if (!reqs.length) { el.innerHTML = '<span style="color:var(--text3);font-size:14px">신청 내역이 없습니다.</span>'; return; }
-  el.innerHTML = reqs.map(r => leaveHistoryItem(r)).reverse().join('');
-}
-
-function leaveHistoryItem(r) {
-  return `<div class="leave-history-item">
-    <div class="lhi-left">
-      <div class="lhi-type">${r.typeLabel}</div>
-      <div class="lhi-date">${r.start}${r.end !== r.start ? ' ~ ' + r.end : ''} · ${r.reason||'사유 없음'}</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px">
-      <div class="lhi-days">${r.days}일</div>
-      <span class="badge badge-yellow">${r.status}</span>
-    </div>
-  </div>`;
+  el.innerHTML = [...reqs].reverse().map(r => {
+    const deductBadge = r.annual
+      ? `<span class="badge badge-cyan">연차 -${r.deduct}일</span>`
+      : `<span class="badge badge-green">미차감</span>`;
+    const timeInfo = r.annual ? ` · ${r.startTime}~${r.endTime}` : '';
+    const subInfo  = r.subDate ? ` · 대체근무일: ${r.subDate}` : '';
+    const fileInfo = r.fileName ? ` · 📎 ${r.fileName}` : '';
+    const statusColor = r.status === '자동승인' ? 'badge-green' : 'badge-yellow';
+    return `<div class="leave-history-item">
+      <div class="lhi-left">
+        <div class="lhi-type">${r.typeLabel} ${deductBadge}</div>
+        <div class="lhi-date">${r.date}${timeInfo}${subInfo}${fileInfo}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px">결재: ${r.approverLabel} · ${r.reason}</div>
+      </div>
+      <span class="badge ${statusColor}" style="white-space:nowrap">${r.status}</span>
+    </div>`;
+  }).join('');
 }
 
 // ══════════════════════════════════════════
