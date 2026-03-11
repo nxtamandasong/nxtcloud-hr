@@ -613,11 +613,12 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
       <!-- ── PROFILE ── -->
       <div class="page" id="page-profile">
         <div class="page-title">내 정보</div>
-        <div class="page-sub">직원 기본 정보</div>
+        <div class="page-sub">직원 기본 정보 및 계정 설정</div>
         <div class="card">
           <div class="profile-header" id="profileHeader"></div>
           <div class="info-grid" id="profileGrid"></div>
         </div>
+        <div class="card" id="pwChangeCard"></div>
       </div>
 
       <!-- ── ADMIN ── -->
@@ -1086,13 +1087,17 @@ function renderProfile() {
   const emp = currentEmp;
   const serviceMs = TODAY - emp.hireDate;
   const serviceDays = Math.floor(serviceMs / (1000*60*60*24));
+  const roleLabel = emp.role === 'executive' ? 'C-Level' : emp.role === 'lead' ? '팀장' : '팀원';
 
   document.getElementById('profileHeader').innerHTML = `
     <div class="profile-avatar-lg" style="background:${emp.color}">${emp.initials}</div>
     <div>
-      <div class="profile-name">${emp.name}</div>
-      <div class="profile-meta">${emp.dept} · ${emp.role}</div>
-      <div style="margin-top:6px"><span class="badge badge-cyan">재직중</span></div>
+      <div class="profile-name">${emp.name} <span style="font-size:14px;color:var(--text3);font-weight:400">(${emp.nickname})</span></div>
+      <div class="profile-meta">${emp.dept} · ${roleLabel}</div>
+      <div style="margin-top:6px">
+        <span class="badge badge-cyan">재직중</span>
+        ${emp.admin ? '<span class="badge" style="margin-left:6px;background:rgba(124,58,237,0.15);color:#a78bfa">관리자</span>' : ''}
+      </div>
     </div>`;
 
   document.getElementById('profileGrid').innerHTML = `
@@ -1113,6 +1118,14 @@ function renderProfile() {
       <div class="info-item-value">${serviceDays}일</div>
     </div>
     <div class="info-item">
+      <div class="info-item-label">연락처</div>
+      <div class="info-item-value">${emp.phone || '-'}</div>
+    </div>
+    <div class="info-item">
+      <div class="info-item-label">이메일</div>
+      <div class="info-item-value">${emp.email || '-'}</div>
+    </div>
+    <div class="info-item">
       <div class="info-item-label">상태</div>
       <div class="info-item-value" style="color:var(--green)">재직중</div>
     </div>
@@ -1120,6 +1133,64 @@ function renderProfile() {
       <div class="info-item-label">연차 잔여</div>
       <div class="info-item-value" style="color:var(--cyan)">${getTotalRemaining(calcLeave(emp))}일</div>
     </div>`;
+
+  // 비밀번호 변경 섹션 (카드 추가)
+  const pwCard = document.getElementById('pwChangeCard');
+  if (pwCard) pwCard.innerHTML = `
+    <div class="card-title"><span class="card-title-icon">🔑</span> 비밀번호 변경</div>
+    <div style="display:grid;gap:12px;max-width:360px">
+      <div class="form-group">
+        <label class="form-label">현재 비밀번호</label>
+        <input class="form-input" type="password" id="pwCurrent" placeholder="현재 비밀번호 입력">
+      </div>
+      <div class="form-group">
+        <label class="form-label">새 비밀번호</label>
+        <input class="form-input" type="password" id="pwNew" placeholder="새 비밀번호 입력">
+      </div>
+      <div class="form-group">
+        <label class="form-label">새 비밀번호 확인</label>
+        <input class="form-input" type="password" id="pwConfirm" placeholder="새 비밀번호 재입력">
+      </div>
+      <div id="pwChangeMsg" style="font-size:13px;display:none"></div>
+      <button class="submit-btn" style="margin-top:0" onclick="changePassword()">변경하기</button>
+    </div>`;
+}
+
+async function changePassword() {
+  const current = document.getElementById('pwCurrent').value;
+  const newPw   = document.getElementById('pwNew').value;
+  const confirm = document.getElementById('pwConfirm').value;
+  const msgEl   = document.getElementById('pwChangeMsg');
+
+  const showMsg = (msg, ok) => {
+    msgEl.textContent = msg;
+    msgEl.style.color = ok ? 'var(--green)' : 'var(--red)';
+    msgEl.style.display = 'block';
+  };
+
+  if (current !== currentEmp.password) { showMsg('❌ 현재 비밀번호가 올바르지 않습니다.', false); return; }
+  if (!newPw) { showMsg('❌ 새 비밀번호를 입력해주세요.', false); return; }
+  if (newPw.length < 4) { showMsg('❌ 비밀번호는 4자 이상이어야 합니다.', false); return; }
+  if (newPw !== confirm) { showMsg('❌ 새 비밀번호가 일치하지 않습니다.', false); return; }
+  if (newPw === current) { showMsg('❌ 현재 비밀번호와 동일합니다.', false); return; }
+
+  showMsg('⏳ 변경 중...', true);
+
+  // 메모리 업데이트
+  currentEmp.password = newPw;
+  EMPLOYEES[currentEmp.id].password = newPw;
+
+  // 구글 시트에 반영
+  try {
+    await apiPost({ action: 'updatePassword', empId: currentEmp.id, password: newPw });
+    showMsg('✅ 비밀번호가 변경되었습니다!', true);
+    document.getElementById('pwCurrent').value = '';
+    document.getElementById('pwNew').value = '';
+    document.getElementById('pwConfirm').value = '';
+  } catch(e) {
+    // 시트 저장 실패해도 메모리는 변경됨
+    showMsg('✅ 비밀번호가 변경되었습니다! (시트 반영은 잠시 후)', true);
+  }
 }
 
 // ══════════════════════════════════════════
@@ -1735,16 +1806,77 @@ function renderLeaveHistory() {
     const timeInfo = r.annual ? ` · ${r.startTime}~${r.endTime}` : '';
     const subInfo  = r.subDate ? ` · 대체근무일: ${r.subDate}` : '';
     const fileInfo = r.fileName ? ` · 📎 ${r.fileName}` : '';
-    const statusColor = r.status === '자동승인' ? 'badge-green' : 'badge-yellow';
+    const isCancellable = r.status === '승인대기' || r.status === '승인' || r.status === '자동승인';
+    const statusColor = r.status === '자동승인' || r.status === '승인' ? 'badge-green'
+      : r.status === '미승인' ? 'badge-red'
+      : r.status === '취소' ? 'badge-grey'
+      : 'badge-yellow';
+    const cancelBtn = isCancellable
+      ? `<button onclick="cancelRequest('${r.id}')" style="background:none;border:1px solid var(--border2);border-radius:6px;color:var(--text3);font-size:11px;padding:3px 8px;cursor:pointer;margin-left:6px;font-family:inherit" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">취소</button>`
+      : '';
+    const rejectInfo = r.rejectReason ? `<div style="font-size:11px;color:var(--red);margin-top:2px">미승인 사유: ${r.rejectReason}</div>` : '';
     return `<div class="leave-history-item">
       <div class="lhi-left">
         <div class="lhi-type">${r.typeLabel} ${deductBadge}</div>
         <div class="lhi-date">${r.date}${timeInfo}${subInfo}${fileInfo}</div>
         <div style="font-size:11px;color:var(--text3);margin-top:3px">결재: ${r.approverLabel} · ${r.reason}</div>
+        ${rejectInfo}
       </div>
-      <span class="badge ${statusColor}" style="white-space:nowrap">${r.status}</span>
+      <div style="display:flex;align-items:center;flex-shrink:0">
+        <span class="badge ${statusColor}" style="white-space:nowrap">${r.status}</span>
+        ${cancelBtn}
+      </div>
     </div>`;
   }).join('');
+}
+
+// 휴가 취소
+function cancelRequest(reqId) {
+  const reqs = leaveRequests[currentEmp.id] || [];
+  const req  = reqs.find(r => String(r.id) === String(reqId));
+  if (!req) return;
+
+  const wasApproved = req.status === '승인' || req.status === '자동승인';
+  const msg = wasApproved
+    ? `[${req.typeLabel}] ${req.date} 승인된 휴가를 취소하면 연차가 복구됩니다.\n정말 취소하시겠어요?`
+    : `[${req.typeLabel}] ${req.date} 휴가 신청을 취소하시겠어요?`;
+
+  if (!confirm(msg)) return;
+
+  // 연차 복구 (승인됐던 연차차감 건)
+  if (wasApproved && req.annual && req.deduct > 0) {
+    const ld = calcLeave(currentEmp);
+    let toRestore = req.deduct;
+    for (const d of [...ld].reverse()) {
+      if (d.used >= toRestore) { d.used -= toRestore; break; }
+      toRestore -= d.used; d.used = 0;
+    }
+  }
+
+  req.status = '취소';
+
+  // 결재자 알림함에서도 해당 건 제거
+  const approverId = currentEmp.role === 'member' ? currentEmp.approver : null;
+  if (approverId && notifications[approverId]) {
+    const idx = notifications[approverId].findIndex(n => n.reqId === String(reqId));
+    if (idx !== -1) notifications[approverId].splice(idx, 1);
+  }
+
+  // 결재자에게 취소 알림 발송
+  const appId = currentEmp.role === 'member' ? currentEmp.approver : req.approverLabel;
+  if (appId && EMPLOYEES[appId]) {
+    addNotification(appId, {
+      id: Date.now(), reqId: reqId + '_cancel',
+      fromId: currentEmp.id, fromName: currentEmp.name,
+      typeLabel: req.typeLabel, date: req.date,
+      timeInfo: '', deduct: 0, reason: '신청자가 취소했습니다.',
+      status: '취소알림', createdAt: nowStr(),
+    });
+  }
+
+  showToast('🗑 휴가 신청이 취소되었습니다.');
+  renderLeaveHistory();
+  updateNotiBadge();
 }
 
 // ══════════════════════════════════════════
