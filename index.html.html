@@ -2048,17 +2048,18 @@ async function sendChat() {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({
-        model:'claude-sonnet-4-20250514',
+        model:'claude-sonnet-4-5',
         max_tokens:1000,
         system: buildSystemPrompt(),
         messages: chatHistory[currentEmp.id]
       })
     });
     const data = await resp.json();
-    console.log('API 응답:', JSON.stringify(data));
+    console.log('API 응답 상태:', resp.status, JSON.stringify(data));
     removeTyping();
-    if (data.error) {
-      appendMsg('bot', `⚠️ 오류: ${data.error}`);
+    if (!resp.ok || data.error) {
+      const errMsg = data.error?.message || data.error || `HTTP ${resp.status}`;
+      appendMsg('bot', `⚠️ 오류: ${errMsg}`);
       return;
     }
     const reply = data.content?.[0]?.text || '답변을 가져오지 못했습니다.';
