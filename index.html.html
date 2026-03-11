@@ -775,7 +775,7 @@ function calcLeave(emp) {
   for (let year = hireYear; year <= todayYear; year++) {
     const yearStart = new Date(year, 0, 1);
     const yearEnd   = new Date(year, 11, 31);
-    const expiryDate = new Date(year + 1, 11, 31); // 다음해 12월 31일 소멸
+    const expiryDate = new Date(year, 11, 31); // 당해 12월 31일 소멸
     const expired = expiryDate < TODAY;
 
     let generated = 0;
@@ -938,7 +938,6 @@ async function loadRequestsFromSheet(empId) {
 
 function doLogout() {
   currentEmp = null;
-  EMPLOYEES = {}; // 로그아웃 시 초기화 → 다음 로그인 시 시트에서 재로드
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('mainApp').style.display = 'none';
   document.getElementById('empIdInput').value = '';
