@@ -1122,7 +1122,6 @@ function renderProfile() {
   const roleLabel = emp.role === 'executive' ? 'C-Level' : emp.role === 'lead' ? '팀장' : '팀원';
 
   document.getElementById('profileHeader').innerHTML = `
-    <div class="profile-avatar-lg" style="background:${emp.color}">${emp.initials}</div>
     <div>
       <div class="profile-name">${emp.name} <span style="font-size:14px;color:var(--text3);font-weight:400">(${emp.nickname})</span></div>
       <div class="profile-meta">${emp.dept} · ${roleLabel}</div>
