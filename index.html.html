@@ -573,7 +573,6 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
             <!-- 팀원: 팀장 자동지정 -->
             <div id="approverMember" style="display:none">
               <div style="display:flex;align-items:center;gap:10px">
-                <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px" id="approverAvatar"></div>
                 <div>
                   <div style="font-size:13px;font-weight:600" id="approverName">—</div>
                   <div style="font-size:11px;color:var(--text3)" id="approverRole">팀장 (최종 결재자)</div>
@@ -1716,9 +1715,6 @@ function renderApproverSection() {
 
   if (role === 'member') {
     const lead = EMPLOYEES[currentEmp.approver];
-    const av = document.getElementById('approverAvatar');
-    av.style.background = lead.color;
-    av.textContent = lead.initials;
     document.getElementById('approverName').textContent = `${lead.name} (${lead.nickname})`;
     document.getElementById('approverRole').textContent = `${lead.dept} 팀장 · 최종 결재자`;
   }
