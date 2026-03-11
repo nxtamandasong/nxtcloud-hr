@@ -2018,14 +2018,9 @@ async function sendChat() {
   chatHistory[currentEmp.id].push({ role:'user', content: msg });
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('/api/chat', {
       method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'x-api-key':'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',
-        'anthropic-version':'2023-06-01',
-        'anthropic-dangerous-direct-browser-access':'true'
-      },
+      headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({
         model:'claude-sonnet-4-20250514',
         max_tokens:1000,
