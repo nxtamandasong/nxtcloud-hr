@@ -821,20 +821,38 @@ function calcLeave(emp) {
 
     const serviceYearsAtJan1 = getServiceYears(hire, jan1);
 
-    // 만 1년 미만이면 회계연도 연차 미발생
+    // 입사년도와 같은 해면 연차 미발생 (입사년도 다음해부터 발생)
+    if (year === hireYear + 1 && serviceYearsAtJan1 < 1) {
+      // 입사 다음해 1.1 기준 만 1년 미만 → 입사년도 재직일 비례 계산
+      const hireYearEnd = new Date(hireYear, 11, 31);
+      const daysWorked = Math.floor((hireYearEnd - hire) / (1000*60*60*24)) + 1;
+      const generated = r1(Math.min(daysWorked / 365 * 15, 15));
+      const note = `입사년도 재직 ${daysWorked}일 · 비례 ${generated}일`;
+      results.push({
+        type: 'annual',
+        label: `${year}년 회계연도 연차`,
+        generated,
+        used: 0,
+        note,
+        expired: new Date(year, 11, 31) < TODAY,
+        expiryDate: new Date(year, 11, 31),
+        expiryLabel: `${year}.12.31`
+      });
+      continue;
+    }
+
+    // 그 외 만 1년 미만이면 미발생
     if (serviceYearsAtJan1 < 1) continue;
 
     let generated = 0;
     let note = '';
 
     if (serviceYearsAtJan1 === 1) {
-      // 입사 후 첫 번째 회계연도 연차: 입사년도 재직일 비례 계산
-      const hireYearEnd = new Date(hireYear, 11, 31); // 입사년도 12월31일
-      const daysWorked = Math.floor((hireYearEnd - hire) / (1000*60*60*24)) + 1;
-      generated = r1(Math.min(daysWorked / 365 * 15, 15)); // 최대 15일 상한
-      note = `입사년도 재직 ${daysWorked}일 · 비례 ${generated}일`;
+      // 만 1년 된 해: 법정 15일
+      generated = 15;
+      note = `근속 1년 · 법정 15일`;
     } else {
-      // 만 2년 이상: 15일 + 3년마다 1일 추가 (최대 25일)
+      // 만 2년 이상: 15일 + 2년마다 1일 추가 (최대 25일)
       const extraDays = Math.floor((serviceYearsAtJan1 - 1) / 2);
       generated = Math.min(15 + extraDays, 25);
       note = `근속 ${serviceYearsAtJan1}년 · 법정 ${generated}일`;
