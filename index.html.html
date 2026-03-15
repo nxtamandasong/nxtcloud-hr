@@ -721,7 +721,7 @@ async function loadEmployees() {
         nickname: e.nickname,
         initials,
         color:    DEPT_COLOR_MAP[e.dept] || 'linear-gradient(135deg,#475569,#334155)',
-        hireDate: new Date(e.hireDate),
+        hireDate: (() => { const [y,m,d] = e.hireDate.split('-'); return new Date(+y, +m-1, +d); })(),
         dept:     e.dept,
         role,
         admin:    ADMIN_IDS.includes(e.id),
@@ -807,7 +807,7 @@ function calcLeave(emp) {
   // ──────────────────────────────────────
   // ② 회계연도 연차: 매년 1월 1일 발생
   //    입사 다음해 1월1일 기준 만 1년 미만이면 비례계산
-  //    만 1년 이상: 15일 + 매 3년마다 1일 추가 (최대 25일)
+  //    만 1년 이상: 15일 + 매 2년마다 1일 추가 (최대 25일)
   //    소멸일: 해당 연도 12월 31일
   // ──────────────────────────────────────
   const hireYear = hire.getFullYear();
