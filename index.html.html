@@ -721,7 +721,7 @@ async function loadEmployees() {
         nickname: e.nickname,
         initials,
         color:    DEPT_COLOR_MAP[e.dept] || 'linear-gradient(135deg,#475569,#334155)',
-        hireDate: (() => { const [y,m,d] = e.hireDate.split('-'); return new Date(+y, +m-1, +d); })(),
+        hireDate: toLocalDate(e.hireDate),
         dept:     e.dept,
         role,
         admin:    ADMIN_IDS.includes(e.id),
@@ -749,124 +749,112 @@ async function loadEmployees() {
 }
 
 // ══════════════════════════════════════════
-//  LEAVE CALCULATION (월차 + 회계연도 연차 분리)
+//  LEAVE CALCULATION
 // ══════════════════════════════════════════
 
+// 소수점 1자리 반올림
 function r1(val) {
-  // 소수점 1자리 반올림
   return Math.round(val * 10) / 10;
 }
 
+// 날짜 문자열 → 로컬 시간 기준 Date (UTC 문제 방지)
+function toLocalDate(str) {
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+// 두 날짜 사이 완성된 개월 수
 function completedMonths(from, to) {
   let months = (to.getFullYear() - from.getFullYear()) * 12
-    + (to.getMonth() - from.getMonth());
+             + (to.getMonth() - from.getMonth());
   if (to.getDate() < from.getDate()) months--;
   return Math.max(0, months);
 }
 
-function getServiceYears(hireDate, refDate) {
-  let years = refDate.getFullYear() - hireDate.getFullYear();
-  const m = refDate.getMonth() - hireDate.getMonth();
-  if (m < 0 || (m === 0 && refDate.getDate() < hireDate.getDate())) years--;
+// 두 날짜 사이 만 연수
+function completedYears(from, to) {
+  let years = to.getFullYear() - from.getFullYear();
+  const m = to.getMonth() - from.getMonth();
+  if (m < 0 || (m === 0 && to.getDate() < from.getDate())) years--;
   return Math.max(0, years);
 }
 
+// 날짜 → 'YYYY.MM.DD' 포맷
+function fmtLabel(date) {
+  return date.getFullYear() + '.' +
+    String(date.getMonth()+1).padStart(2,'0') + '.' +
+    String(date.getDate()).padStart(2,'0');
+}
+
 function calcLeave(emp) {
-  const hire = emp.hireDate;
+  const hire = emp.hireDate; // 반드시 로컬 Date
+  const hy = hire.getFullYear();
+  const hm = hire.getMonth();
+  const hd = hire.getDate();
   const results = [];
 
-  // ──────────────────────────────────────
-  // ① 월차: 입사 후 매 1개월마다 1일 발생
-  //    최대 11일 (입사 1개월차 ~ 11개월차)
-  //    소멸일: 입사 1주년일 (hire + 1년)
-  // ──────────────────────────────────────
-  const anniversary = new Date(hire);
-  anniversary.setFullYear(anniversary.getFullYear() + 1);
-  // 월차 만료일 = 입사 1주년 - 1일
-  const monthlyExpiry = new Date(anniversary);
-  monthlyExpiry.setDate(monthlyExpiry.getDate() - 1);
-  const monthlyExpired = anniversary <= TODAY;
+  // ────────────────────────────────────────
+  // ① 월차
+  //    발생: 입사 후 매 1개월마다 1일 (최대 11일)
+  //    소멸: 입사 1주년 전날
+  // ────────────────────────────────────────
+  const anniv   = new Date(hy + 1, hm, hd);      // 입사 1주년
+  const mExpiry = new Date(hy + 1, hm, hd - 1);  // 만료일 = 1주년 - 1일
+  const mExpired = anniv <= TODAY;
+  const mGen = Math.min(completedMonths(hire, TODAY), 11);
 
-  // 현재까지 발생한 월차 수 (최대 11)
-  // 입사 1개월 후부터 발생하므로 completedMonths 그대로 사용, 최대 11
-  const monthlyGenerated = Math.min(completedMonths(hire, TODAY), 11);
-
-  if (monthlyGenerated > 0 || !monthlyExpired) {
+  if (mGen > 0 || !mExpired) {
     results.push({
-      type: 'monthly',
-      label: '월차 (입사 1년차)',
-      generated: monthlyGenerated,
-      used: 0,
-      note: `입사 후 ${monthlyGenerated}개월 완근 · 최대 11일`,
-      expired: monthlyExpired,
-      expiryDate: monthlyExpiry,
-      expiryLabel: `${monthlyExpiry.getFullYear()}.${String(monthlyExpiry.getMonth()+1).padStart(2,'0')}.${String(monthlyExpiry.getDate()).padStart(2,'0')}`
+      type:        'monthly',
+      label:       '월차 (입사 1년차)',
+      generated:   mGen,
+      used:        0,
+      note:        `입사 후 ${mGen}개월 완근 · 최대 11일`,
+      expired:     mExpired,
+      expiryDate:  mExpiry,
+      expiryLabel: fmtLabel(mExpiry),
     });
   }
 
-  // ──────────────────────────────────────
-  // ② 회계연도 연차: 매년 1월 1일 발생
-  //    입사 다음해 1월1일 기준 만 1년 미만이면 비례계산
-  //    만 1년 이상: 15일 + 매 2년마다 1일 추가 (최대 25일)
-  //    소멸일: 해당 연도 12월 31일
-  // ──────────────────────────────────────
-  const hireYear = hire.getFullYear();
+  // ────────────────────────────────────────
+  // ② 회계연도 연차
+  //    발생: 매년 1월 1일
+  //    만 1년 미만 → 입사년도 재직일/365 × 15 (최대 15일)
+  //    만 1년 이상 → 15일 + floor((근속년수-1)/2) (최대 25일)
+  //    소멸: 해당연도 12.31
+  // ────────────────────────────────────────
   const todayYear = TODAY.getFullYear();
 
-  for (let year = hireYear + 1; year <= todayYear; year++) {
-    const jan1 = new Date(year, 0, 1);
+  for (let year = hy + 1; year <= todayYear; year++) {
+    const jan1  = new Date(year, 0, 1);
     const dec31 = new Date(year, 11, 31);
-    const expiryDate = dec31;
-    const expired = expiryDate < TODAY;
+    const expired = dec31 < TODAY;
+    const svcYears = completedYears(hire, jan1);
 
-    const serviceYearsAtJan1 = getServiceYears(hire, jan1);
+    let generated, note;
 
-    // 입사년도와 같은 해면 연차 미발생 (입사년도 다음해부터 발생)
-    if (year === hireYear + 1 && serviceYearsAtJan1 < 1) {
-      // 입사 다음해 1.1 기준 만 1년 미만 → 입사년도 재직일 비례 계산
-      const hireYearEnd = new Date(hireYear, 11, 31);
-      const daysWorked = Math.floor((hireYearEnd - hire) / (1000*60*60*24)) + 1;
-      const generated = r1(Math.min(daysWorked / 365 * 15, 15));
-      const note = `입사년도 재직 ${daysWorked}일 · 비례 ${generated}일`;
-      results.push({
-        type: 'annual',
-        label: `${year}년 회계연도 연차`,
-        generated,
-        used: 0,
-        note,
-        expired: new Date(year, 11, 31) < TODAY,
-        expiryDate: new Date(year, 11, 31),
-        expiryLabel: `${year}.12.31`
-      });
-      continue;
-    }
-
-    // 그 외 만 1년 미만이면 미발생
-    if (serviceYearsAtJan1 < 1) continue;
-
-    let generated = 0;
-    let note = '';
-
-    if (serviceYearsAtJan1 === 1) {
-      // 만 1년 된 해: 법정 15일
-      generated = 15;
-      note = `근속 1년 · 법정 15일`;
+    if (svcYears < 1) {
+      // 입사 다음해이고 만 1년 미만 → 비례계산
+      if (year !== hy + 1) continue;
+      const hireYearEnd = new Date(hy, 11, 31);
+      const daysWorked = Math.round((hireYearEnd - hire) / (1000*60*60*24)) + 1;
+      generated = r1(Math.min(daysWorked / 365 * 15, 15));
+      note = `입사년도 재직 ${daysWorked}일 · 비례 ${generated}일`;
     } else {
-      // 만 2년 이상: 15일 + 2년마다 1일 추가 (최대 25일)
-      const extraDays = Math.floor((serviceYearsAtJan1 - 1) / 2);
-      generated = Math.min(15 + extraDays, 25);
-      note = `근속 ${serviceYearsAtJan1}년 · 법정 ${generated}일`;
+      const extra = Math.floor((svcYears - 1) / 2);
+      generated = Math.min(15 + extra, 25);
+      note = `근속 ${svcYears}년 · 법정 ${generated}일`;
     }
 
     results.push({
-      type: 'annual',
-      label: `${year}년 회계연도 연차`,
+      type:        'annual',
+      label:       `${year}년 회계연도 연차`,
       generated,
-      used: 0,
+      used:        0,
       note,
       expired,
-      expiryDate,
-      expiryLabel: `${year}.12.31`
+      expiryDate:  dec31,
+      expiryLabel: `${year}.12.31`,
     });
   }
 
@@ -874,7 +862,8 @@ function calcLeave(emp) {
 }
 
 function getTotalRemaining(leaveData) {
-  return r1(leaveData.filter(d => !d.expired)
+  return r1(leaveData
+    .filter(d => !d.expired)
     .reduce((s, d) => s + d.generated - d.used, 0));
 }
 
