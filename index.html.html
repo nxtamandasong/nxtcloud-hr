@@ -961,6 +961,9 @@ async function doLogin() {
   currentEmp = emp;
   if (!leaveRequests[emp.id]) leaveRequests[emp.id] = [];
 
+  // 로그인 상태 저장 (새로고침 복원용)
+  localStorage.setItem('nxthr_empId', emp.id);
+
   // 시트에서 기존 신청내역 + 알림 로드
   loadRequestsFromSheet(emp.id);
   loadNotificationsFromSheet(emp.id);
@@ -998,6 +1001,7 @@ async function loadRequestsFromSheet(empId) {
 
 function doLogout() {
   currentEmp = null;
+  localStorage.removeItem('nxthr_empId');
   document.getElementById('loginScreen').style.display = 'flex';
   document.getElementById('mainApp').style.display = 'none';
   document.getElementById('empIdInput').value = '';
@@ -1052,8 +1056,8 @@ function renderDashboard() {
   const emp = currentEmp;
   const leaveData = calcLeave(emp);
   const remaining = getTotalRemaining(leaveData);
-  const used = leaveData.reduce((s,d)=>s+d.used,0);
-  const total = leaveData.filter(d=>!d.expired).reduce((s,d)=>s+d.generated,0);
+  const used = r1(leaveData.reduce((s,d)=>s+d.used,0));
+  const total = r1(leaveData.filter(d=>!d.expired).reduce((s,d)=>s+d.generated,0));
   const serviceMs = TODAY - emp.hireDate;
   const serviceYears = Math.floor(serviceMs / (1000*60*60*24*365));
   const serviceDays = Math.floor(serviceMs / (1000*60*60*24));
@@ -1123,7 +1127,7 @@ function renderLeaveDetail() {
         <div class="ld-year">${d.label}</div>
         <div class="ld-days ${d.expired?'':'cyan'}" style="${d.expired?'color:var(--text3)':''}">${d.generated}일</div>
         <div class="ld-info">${d.note}</div>
-        <div class="ld-info">사용 ${d.used}일 · 잔여 ${remain}일</div>
+        <div class="ld-info">사용 ${r1(d.used)}일 · 잔여 ${remain}일</div>
         <div class="ld-expiry ${d.expired?'ld-expired':'ld-valid'}">
           ${d.expired ? '소멸' : '유효'} · ${d.expiryLabel}
         </div>
@@ -1315,7 +1319,7 @@ function renderAdminLeave() {
   emps.forEach(e => {
     const ld = calcLeave(e);
     const remaining = getTotalRemaining(ld);
-    const used = ld.reduce((s,d)=>s+d.used,0);
+    const used = r1(ld.reduce((s,d)=>s+d.used,0));
     const gen2026 = ld.find(d=>d.type==='annual' && d.label.includes('2026'))?.generated || 0;
     const reqCount = (leaveRequests[e.id] || []).length;
     const dColor = DEPT_COLORS[e.dept] || '#666';
@@ -2031,6 +2035,32 @@ function showToast(msg) {
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// ══════════════════════════════════════════
+//  자동 로그인 복원 (새로고침 대응)
+// ══════════════════════════════════════════
+async function tryAutoLogin() {
+  const savedId = localStorage.getItem('nxthr_empId');
+  if (!savedId) return;
+
+  // 직원 데이터 로드
+  if (Object.keys(EMPLOYEES).length === 0) {
+    const ok = await loadEmployees();
+    if (!ok) { localStorage.removeItem('nxthr_empId'); return; }
+  }
+
+  const emp = EMPLOYEES[savedId];
+  if (!emp) { localStorage.removeItem('nxthr_empId'); return; }
+
+  currentEmp = emp;
+  if (!leaveRequests[emp.id]) leaveRequests[emp.id] = [];
+  loadRequestsFromSheet(emp.id);
+  loadNotificationsFromSheet(emp.id);
+  initApp();
+  updateNotiBadge();
+}
+
+document.addEventListener('DOMContentLoaded', tryAutoLogin);
 </script>
 </body>
 </html>
