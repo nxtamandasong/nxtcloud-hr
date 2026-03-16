@@ -113,6 +113,8 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
 .nav-item.active{background:rgba(99,102,241,0.15);color:var(--cyan);border:1px solid rgba(129,140,248,0.25);
   box-shadow:0 0 12px rgba(99,102,241,0.1)}
 .nav-icon{font-size:16px;width:20px;text-align:center}
+.nav-sub{font-size:12px;padding:8px 12px;margin-bottom:1px}
+.nav-sub.active{background:rgba(99,102,241,0.15);color:var(--cyan);border:1px solid rgba(129,140,248,0.25)}
 .nav-section{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;
   letter-spacing:0.1em;padding:16px 12px 6px;margin-top:8px}
 
@@ -395,8 +397,28 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
       <div class="nav-item" onclick="navigate('leave',this)">
         <span class="nav-icon">📅</span> 연차 관리
       </div>
-      <div class="nav-item" onclick="navigate('request',this)">
-        <span class="nav-icon">✏️</span> 휴가 신청
+      <!-- 전자결재 -->
+      <div class="nav-item" id="navApproval" onclick="toggleApprovalMenu(this)">
+        <span class="nav-icon">📋</span> 전자결재
+        <span id="approvalArrow" style="margin-left:auto;font-size:11px;transition:transform .2s">▼</span>
+      </div>
+      <div id="approvalSubMenu" style="display:none;padding-left:16px">
+        <div class="nav-item nav-sub" onclick="navigate('request',this)">
+          <span class="nav-icon">✈️</span> 휴가 신청
+        </div>
+        <div class="nav-item nav-sub" onclick="navigate('expense',this)">
+          <span class="nav-icon">💳</span> 지출결의서
+        </div>
+        <div class="nav-item nav-sub" onclick="navigate('purchase',this)">
+          <span class="nav-icon">🛒</span> 구매신청
+        </div>
+        <div class="nav-item nav-sub" onclick="navigate('tax',this)">
+          <span class="nav-icon">🧾</span> 세금계산서 발행요청
+        </div>
+      </div>
+      <!-- 재직증명서 -->
+      <div class="nav-item" onclick="navigate('certificate',this)">
+        <span class="nav-icon">📄</span> 재직증명서
       </div>
       <div class="nav-item" id="navInbox" onclick="navigate('inbox',this)" style="justify-content:space-between">
         <span><span class="nav-icon">🔔</span> 알림함</span>
@@ -499,7 +521,7 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
             <!-- ② 공통: 날짜 -->
             <div class="form-group" id="fieldDate">
               <label class="form-label">휴가 날짜 <span class="req-star">*</span></label>
-              <input class="form-input" type="date" id="leaveDate" value="2026-03-12" onchange="calcEndTime()">
+              <input class="form-input" type="date" id="leaveDate" onchange="calcEndTime()">
             </div>
 
             <!-- ③ 연차차감: 시작시간 -->
@@ -623,19 +645,206 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
       </div>
 
       <!-- ── ADMIN ── -->
+      <!-- ── 지출결의서 ── -->
+      <div class="page" id="page-expense">
+        <div class="page-title">💳 지출결의서</div>
+        <div class="page-sub">지출 내역을 작성하여 결재를 요청하세요</div>
+        <div class="card">
+          <div class="card-title"><span class="card-title-icon">✏️</span> 신청서 작성</div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">제목 <span class="req-star">*</span></label>
+              <input class="form-input" type="text" id="expenseTitle" placeholder="예: 3월 팀 회식비 지출결의">
+            </div>
+            <div class="form-group">
+              <label class="form-label">지출일 <span class="req-star">*</span></label>
+              <input class="form-input" type="date" id="expenseDate">
+            </div>
+            <div class="form-group">
+              <label class="form-label">금액 (원) <span class="req-star">*</span></label>
+              <input class="form-input" type="number" id="expenseAmount" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">지출 항목 <span class="req-star">*</span></label>
+              <select class="form-select" id="expenseCategory">
+                <option value="">선택하세요</option>
+                <option value="식비">식비</option>
+                <option value="교통비">교통비</option>
+                <option value="숙박비">숙박비</option>
+                <option value="회의비">회의비</option>
+                <option value="교육비">교육비</option>
+                <option value="소모품">소모품</option>
+                <option value="기타">기타</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">사유 <span class="req-star">*</span></label>
+              <textarea class="form-textarea" id="expenseReason" placeholder="지출 사유를 상세히 입력하세요..."></textarea>
+            </div>
+          </div>
+          <!-- 결재라인 표시 -->
+          <div id="expenseApprovalLine" style="margin:16px 0;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border2)">
+            <div style="font-size:12px;font-weight:700;color:var(--text3);letter-spacing:.08em;margin-bottom:12px">📋 결재 라인</div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap" id="expenseApprovalLineContent"></div>
+          </div>
+          <button class="submit-btn" onclick="submitApprovalDoc('expense')">신청하기 →</button>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="card-title-icon">📝</span> 신청 내역</div>
+          <div id="expenseHistoryList" style="color:var(--text3);font-size:14px">신청 내역이 없습니다.</div>
+        </div>
+      </div>
+
+      <!-- ── 구매신청 ── -->
+      <div class="page" id="page-purchase">
+        <div class="page-title">🛒 구매신청</div>
+        <div class="page-sub">구매가 필요한 물품을 신청하세요</div>
+        <div class="card">
+          <div class="card-title"><span class="card-title-icon">✏️</span> 신청서 작성</div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">제목 <span class="req-star">*</span></label>
+              <input class="form-input" type="text" id="purchaseTitle" placeholder="예: 개발팀 모니터 구매">
+            </div>
+            <div class="form-group">
+              <label class="form-label">구매 희망일 <span class="req-star">*</span></label>
+              <input class="form-input" type="date" id="purchaseDate">
+            </div>
+            <div class="form-group">
+              <label class="form-label">예상 금액 (원) <span class="req-star">*</span></label>
+              <input class="form-input" type="number" id="purchaseAmount" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">수량 <span class="req-star">*</span></label>
+              <input class="form-input" type="number" id="purchaseQty" placeholder="1" min="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label">구매 항목 <span class="req-star">*</span></label>
+              <select class="form-select" id="purchaseCategory">
+                <option value="">선택하세요</option>
+                <option value="IT장비">IT장비</option>
+                <option value="사무용품">사무용품</option>
+                <option value="소프트웨어">소프트웨어</option>
+                <option value="가구/비품">가구/비품</option>
+                <option value="기타">기타</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">구매 사유 <span class="req-star">*</span></label>
+              <textarea class="form-textarea" id="purchaseReason" placeholder="구매가 필요한 이유를 상세히 입력하세요..."></textarea>
+            </div>
+          </div>
+          <div id="purchaseApprovalLine" style="margin:16px 0;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border2)">
+            <div style="font-size:12px;font-weight:700;color:var(--text3);letter-spacing:.08em;margin-bottom:12px">📋 결재 라인</div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap" id="purchaseApprovalLineContent"></div>
+          </div>
+          <button class="submit-btn" onclick="submitApprovalDoc('purchase')">신청하기 →</button>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="card-title-icon">📝</span> 신청 내역</div>
+          <div id="purchaseHistoryList" style="color:var(--text3);font-size:14px">신청 내역이 없습니다.</div>
+        </div>
+      </div>
+
+      <!-- ── 세금계산서 발행요청 ── -->
+      <div class="page" id="page-tax">
+        <div class="page-title">🧾 세금계산서 발행요청</div>
+        <div class="page-sub">세금계산서 발행을 요청하세요</div>
+        <div class="card">
+          <div class="card-title"><span class="card-title-icon">✏️</span> 신청서 작성</div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">제목 <span class="req-star">*</span></label>
+              <input class="form-input" type="text" id="taxTitle" placeholder="예: (주)ABC 3월 용역비 세금계산서">
+            </div>
+            <div class="form-group">
+              <label class="form-label">발행 희망일 <span class="req-star">*</span></label>
+              <input class="form-input" type="date" id="taxDate">
+            </div>
+            <div class="form-group">
+              <label class="form-label">공급가액 (원) <span class="req-star">*</span></label>
+              <input class="form-input" type="number" id="taxAmount" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">공급받는 회사명 <span class="req-star">*</span></label>
+              <input class="form-input" type="text" id="taxCompany" placeholder="(주)거래처명">
+            </div>
+            <div class="form-group">
+              <label class="form-label">사업자등록번호</label>
+              <input class="form-input" type="text" id="taxRegNum" placeholder="000-00-00000">
+            </div>
+            <div class="form-group full">
+              <label class="form-label">품목/내용 <span class="req-star">*</span></label>
+              <textarea class="form-textarea" id="taxReason" placeholder="발행 품목 및 내용을 입력하세요..."></textarea>
+            </div>
+          </div>
+          <div id="taxApprovalLine" style="margin:16px 0;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border2)">
+            <div style="font-size:12px;font-weight:700;color:var(--text3);letter-spacing:.08em;margin-bottom:12px">📋 결재 라인</div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap" id="taxApprovalLineContent"></div>
+          </div>
+          <button class="submit-btn" onclick="submitApprovalDoc('tax')">신청하기 →</button>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="card-title-icon">📝</span> 신청 내역</div>
+          <div id="taxHistoryList" style="color:var(--text3);font-size:14px">신청 내역이 없습니다.</div>
+        </div>
+      </div>
+
+      <!-- ── 재직증명서 ── -->
+      <div class="page" id="page-certificate">
+        <div class="page-title">📄 재직증명서</div>
+        <div class="page-sub">재직증명서 발급을 신청하세요. 승인 후 PDF가 알림함으로 전송됩니다.</div>
+        <div class="card">
+          <div class="card-title"><span class="card-title-icon">✏️</span> 발급 신청</div>
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="form-label">발급 사유 <span class="req-star">*</span></label>
+              <select class="form-select" id="certReason">
+                <option value="">선택하세요</option>
+                <option value="금융기관 제출">금융기관 제출</option>
+                <option value="관공서 제출">관공서 제출</option>
+                <option value="visa 신청">비자 신청</option>
+                <option value="보험 가입">보험 가입</option>
+                <option value="학교 제출">학교 제출</option>
+                <option value="기타">기타</option>
+              </select>
+            </div>
+            <div class="form-group full" id="certEtcGroup" style="display:none">
+              <label class="form-label">기타 사유 입력</label>
+              <input class="form-input" type="text" id="certEtcReason" placeholder="발급 사유를 입력하세요">
+            </div>
+          </div>
+          <!-- 발급 정보 미리보기 -->
+          <div style="margin:16px 0;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border2)">
+            <div style="font-size:12px;font-weight:700;color:var(--text3);letter-spacing:.08em;margin-bottom:12px">📋 발급 정보 미리보기</div>
+            <div id="certPreview" style="font-size:13px;color:var(--text2);line-height:2"></div>
+          </div>
+          <!-- 결재라인 -->
+          <div style="margin:16px 0;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border2)">
+            <div style="font-size:12px;font-weight:700;color:var(--text3);letter-spacing:.08em;margin-bottom:8px">📋 결재자</div>
+            <div style="font-size:13px;color:var(--text2)" id="certApproverDisplay"></div>
+          </div>
+          <button class="submit-btn" onclick="submitCertificate()">발급 신청하기 →</button>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="card-title-icon">📝</span> 신청 내역</div>
+          <div id="certHistoryList" style="color:var(--text3);font-size:14px">신청 내역이 없습니다.</div>
+        </div>
+      </div>
+
       <div class="page" id="page-admin">
         <div class="page-title">🛡️ 관리자 현황</div>
         <div class="page-sub">전 임직원 연차 잔여 및 휴가 신청 현황</div>
 
         <!-- 탭 -->
-        <div style="display:flex;gap:8px;margin-bottom:20px">
+        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
           <button class="admin-tab active" id="adminTab1" onclick="switchAdminTab('leave')">📊 연차 잔여현황</button>
           <button class="admin-tab" id="adminTab2" onclick="switchAdminTab('requests')">📋 신청현황</button>
+          <button class="admin-tab" id="adminTab3" onclick="switchAdminTab('approvalLine')">⚙️ 결재라인 설정</button>
         </div>
 
         <!-- 연차 잔여현황 탭 -->
         <div id="adminLeavePanel">
-          <!-- 부서 필터 -->
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px" id="deptFilter"></div>
           <div id="adminLeaveTable"></div>
         </div>
@@ -643,6 +852,18 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
         <!-- 신청현황 탭 -->
         <div id="adminRequestPanel" style="display:none">
           <div id="adminRequestTable"></div>
+        </div>
+
+        <!-- 결재라인 설정 탭 -->
+        <div id="adminApprovalLinePanel" style="display:none">
+          <div class="card">
+            <div class="card-title"><span class="card-title-icon">⚙️</span> 전자결재 결재라인 설정</div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:20px">각 문서 유형별 1차 결재자와 최종 결재자를 설정합니다.</div>
+
+            <div id="approvalLineSettings"></div>
+
+            <button class="submit-btn" style="margin-top:20px" onclick="saveApprovalLines()">저장하기 →</button>
+          </div>
         </div>
       </div>
 
@@ -1015,27 +1236,60 @@ function initApp() {
   document.getElementById('adminNavSection').style.display = isAdmin ? '' : 'none';
   document.getElementById('adminNavItem').style.display    = isAdmin ? '' : 'none';
 
+  // 날짜 기본값 오늘로 설정
+  const todayStr = TODAY.toISOString().slice(0, 10);
+  ['leaveDate', 'expenseDate', 'purchaseDate', 'taxDate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = todayStr;
+  });
+
   navigate('dashboard', document.querySelector('.nav-item'));
 }
 
 // ══════════════════════════════════════════
 //  NAVIGATE
 // ══════════════════════════════════════════
+function toggleApprovalMenu(el) {
+  const sub = document.getElementById('approvalSubMenu');
+  const arrow = document.getElementById('approvalArrow');
+  const isOpen = sub.style.display !== 'none';
+  sub.style.display = isOpen ? 'none' : 'block';
+  arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
+}
+
 function navigate(pageId, navEl) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  if (navEl) navEl.classList.add('active');
+  document.querySelectorAll('.nav-sub').forEach(n => n.classList.remove('active'));
+  if (navEl) {
+    navEl.classList.add('active');
+    // 서브메뉴 항목이면 전자결재 부모도 열어두기
+    if (['request','expense','purchase','tax'].includes(pageId)) {
+      document.getElementById('approvalSubMenu').style.display = 'block';
+      document.getElementById('approvalArrow').style.transform = 'rotate(180deg)';
+    }
+  }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + pageId).classList.add('active');
 
-  const titles = {dashboard:'대시보드', leave:'연차 관리', request:'휴가 신청', inbox:'알림함', profile:'내 정보', admin:'관리자 현황'};
+  const titles = {
+    dashboard:'대시보드', leave:'연차 관리',
+    request:'휴가 신청', expense:'지출결의서',
+    purchase:'구매신청', tax:'세금계산서 발행요청',
+    certificate:'재직증명서',
+    inbox:'알림함', profile:'내 정보', admin:'관리자 현황'
+  };
   document.getElementById('topbarPage').textContent = titles[pageId] || '';
 
-  if (pageId === 'dashboard') renderDashboard();
-  if (pageId === 'leave')     renderLeaveDetail();
-  if (pageId === 'profile')   renderProfile();
-  if (pageId === 'request')   { renderLeaveHistory(); onLeaveTypeChange(); }
-  if (pageId === 'admin')     renderAdmin();
-  if (pageId === 'inbox')     renderInbox();
+  if (pageId === 'dashboard')   renderDashboard();
+  if (pageId === 'leave')       renderLeaveDetail();
+  if (pageId === 'profile')     renderProfile();
+  if (pageId === 'request')     { renderLeaveHistory(); onLeaveTypeChange(); }
+  if (pageId === 'admin')       renderAdmin();
+  if (pageId === 'inbox')       renderInbox();
+  if (pageId === 'expense')     renderApprovalPage('expense');
+  if (pageId === 'purchase')    renderApprovalPage('purchase');
+  if (pageId === 'tax')         renderApprovalPage('tax');
+  if (pageId === 'certificate') renderCertificatePage();
 }
 
 // ══════════════════════════════════════════
@@ -1257,9 +1511,12 @@ function switchAdminTab(tab) {
   adminTabMode = tab;
   document.getElementById('adminTab1').classList.toggle('active', tab==='leave');
   document.getElementById('adminTab2').classList.toggle('active', tab==='requests');
-  document.getElementById('adminLeavePanel').style.display   = tab==='leave'     ? '' : 'none';
-  document.getElementById('adminRequestPanel').style.display = tab==='requests'  ? '' : 'none';
-  if (tab==='requests') renderAdminRequests();
+  document.getElementById('adminTab3').classList.toggle('active', tab==='approvalLine');
+  document.getElementById('adminLeavePanel').style.display        = tab==='leave'        ? '' : 'none';
+  document.getElementById('adminRequestPanel').style.display      = tab==='requests'     ? '' : 'none';
+  document.getElementById('adminApprovalLinePanel').style.display = tab==='approvalLine' ? '' : 'none';
+  if (tab==='requests')     renderAdminRequests();
+  if (tab==='approvalLine') renderApprovalLineSettings();
 }
 
 function renderAdmin() {
@@ -1474,17 +1731,42 @@ function updateNotiBadge() {
 function renderInbox() {
   const myNoti = (notifications[currentEmp.id] || []).slice().reverse();
 
-  // ── 결재 대기 목록 (내가 결재자인 것들) ──
-  const pending = myNoti.filter(n => n.status === '승인대기');
-  const pendingCard = document.getElementById('pendingCard');
-  document.getElementById('pendingCount').textContent = pending.length ? `(${pending.length}건)` : '';
+  // ── 결재 대기 목록 (휴가 신청 + 전자결재) ──
+  const pendingLeave    = myNoti.filter(n => n.status === '승인대기');
+  const pendingApproval = myNoti.filter(n => n.status === '결재요청' && !n.processed);
+  const allPending = [...pendingLeave, ...pendingApproval];
 
-  if (pending.length === 0) {
+  document.getElementById('pendingCount').textContent = allPending.length ? `(${allPending.length}건)` : '';
+
+  if (allPending.length === 0) {
     document.getElementById('pendingList').innerHTML =
       '<div style="color:var(--text3);font-size:14px;padding:8px 0">결재 대기 중인 신청이 없습니다.</div>';
   } else {
-    document.getElementById('pendingList').innerHTML = pending.map(n => {
+    document.getElementById('pendingList').innerHTML = allPending.map(n => {
       const emp = EMPLOYEES[n.fromId];
+
+      if (n.status === '결재요청') {
+        const docLabel = DOC_LABELS[n.docType] || n.docType;
+        return `<div class="approval-item" id="approval-${n.id}">
+          <div class="approval-header">
+            <div class="approval-avatar" style="background:${emp?.color||'#475569'}">${emp?.initials||'?'}</div>
+            <div>
+              <div class="approval-name">${n.fromName} <span style="font-size:12px;color:var(--text3);font-weight:400">${emp?.dept||''}</span></div>
+              <div class="approval-meta">${n.date} 신청</div>
+            </div>
+            <span class="badge badge-yellow" style="margin-left:auto">결재대기</span>
+          </div>
+          <div class="approval-body">
+            📋 <strong>${docLabel}</strong><br>
+            📝 ${n.title}
+          </div>
+          <div class="approval-btns">
+            <button class="btn-approve" onclick="approveApprovalDoc('${n.id}', true)">✅ 승인</button>
+            <button class="btn-reject" onclick="approveApprovalDoc('${n.id}', false)">❌ 미승인</button>
+          </div>
+        </div>`;
+      }
+
       const deductText = n.deduct > 0 ? `연차 ${n.deduct}일 차감` : '연차 미차감';
       return `<div class="approval-item" id="approval-${n.reqId}">
         <div class="approval-header">
@@ -1513,9 +1795,9 @@ function renderInbox() {
     }).join('');
   }
 
-  // ── 내 신청 처리 결과 (알림 시트에서 승인완료/미승인완료 항목) ──
+  // ── 내 신청 처리 결과 ──
   const myNotiResults = (notifications[currentEmp.id] || [])
-    .filter(n => n.status === '승인완료' || n.status === '미승인완료')
+    .filter(n => n.status === '승인완료' || n.status === '미승인완료' || n.type === 'approval_result')
     .slice().reverse();
   const myReqs = (leaveRequests[currentEmp.id] || [])
     .filter(r => r.status === '승인' || r.status === '미승인' || r.status === '자동승인' || r.status === '취소')
@@ -1523,15 +1805,17 @@ function renderInbox() {
 
   const resultEl = document.getElementById('myResultList');
 
-  // 알림 결과 + 신청내역 결과 합쳐서 표시
   const allResults = [
     ...myNotiResults.map(n => ({
-      typeLabel: n.typeLabel, date: n.date,
-      status: n.status === '승인완료' ? '승인' : '미승인',
+      typeLabel: n.type === 'approval_result' ? (DOC_LABELS[n.docType] || n.docType) : n.typeLabel,
+      date: n.date,
+      status: n.status === '승인완료' ? '승인' : n.status === '미승인완료' ? '미승인' : n.status,
       approverLabel: n.fromName,
-      reason: n.reason,
+      reason: n.title || n.reason || '',
       rejectReason: n.rejectReason,
-      createdAt: n.createdAt,
+      isApprovalResult: n.type === 'approval_result',
+      docType: n.docType,
+      docId: n.docId,
     })),
     ...myReqs.map(r => ({
       typeLabel: r.typeLabel, date: r.date,
@@ -1542,10 +1826,9 @@ function renderInbox() {
     })),
   ];
 
-  // 중복 제거 (typeLabel+date 기준)
   const seen = new Set();
   const dedupedResults = allResults.filter(r => {
-    const key = r.typeLabel + r.date + r.status;
+    const key = (r.typeLabel||'') + (r.date||'') + r.status + (r.reason||'');
     if (seen.has(key)) return false;
     seen.add(key); return true;
   });
@@ -1557,13 +1840,15 @@ function renderInbox() {
       const icon  = r.status === '승인' || r.status === '자동승인' ? '✅' : r.status === '미승인' ? '❌' : '🗑';
       const color = r.status === '승인' || r.status === '자동승인' ? 'var(--green)' : r.status === '미승인' ? 'var(--red)' : 'var(--text3)';
       const rejectMsg = r.rejectReason ? `<br><span style="color:var(--red)">미승인 사유: ${r.rejectReason}</span>` : '';
+      const pdfBtn = r.isApprovalResult && r.docType === 'certificate' && r.status === '승인'
+        ? `<br><span style="color:var(--cyan);cursor:pointer;font-size:12px" onclick="downloadCertPdf('${r.docId}')">📄 PDF 다운로드</span>` : '';
       return `<div class="result-item">
         <div class="result-icon">${icon}</div>
         <div class="result-body">
           <div class="result-title">${r.typeLabel} · ${r.date}
             <span style="margin-left:8px;font-size:12px;font-weight:700;color:${color}">${r.status}</span>
           </div>
-          <div class="result-meta">${r.approverLabel || ''} · ${r.reason || ''}${rejectMsg}</div>
+          <div class="result-meta">${r.approverLabel || ''} · ${r.reason || ''}${rejectMsg}${pdfBtn}</div>
         </div>
       </div>`;
     }).join('');
@@ -1572,7 +1857,6 @@ function renderInbox() {
   updateNotiBadge();
 }
 
-// 미승인 사유 입력창 토글
 function showRejectBox(reqId) {
   const box = document.getElementById(`rejectBox-${reqId}`);
   box.style.display = box.style.display === 'block' ? 'none' : 'block';
@@ -2065,6 +2349,465 @@ async function tryAutoLogin() {
 }
 
 document.addEventListener('DOMContentLoaded', tryAutoLogin);
+
+// ══════════════════════════════════════════
+//  전자결재 설정 (결재라인)
+// ══════════════════════════════════════════
+
+// 기본 결재라인 설정
+const DEFAULT_APPROVAL_LINES = {
+  expense:  { first: 'Amanda', final: 'Oliver' },
+  purchase: { first: 'Amanda', final: 'Oliver' },
+  tax:      { first: 'Amanda', final: 'Oliver' },
+  certificate: { first: null, final: 'Amanda' },
+};
+
+let approvalLines = JSON.parse(localStorage.getItem('nxthr_approvalLines') || 'null') || DEFAULT_APPROVAL_LINES;
+
+const DOC_LABELS = {
+  expense: '지출결의서',
+  purchase: '구매신청',
+  tax: '세금계산서 발행요청',
+  certificate: '재직증명서',
+};
+
+// 전자결재 신청 내역 (메모리)
+let approvalDocs = JSON.parse(localStorage.getItem('nxthr_approvalDocs') || '{}');
+
+function saveApprovalDocs() {
+  localStorage.setItem('nxthr_approvalDocs', JSON.stringify(approvalDocs));
+}
+
+// ── 결재라인 렌더링 ──
+function renderApprovalLineUI(docType, containerId) {
+  const line = approvalLines[docType];
+  const emps = Object.values(EMPLOYEES).filter(e => e.status === '재직');
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const makeStep = (label, empId, color) => `
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="text-align:center">
+        <div style="width:40px;height:40px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;margin:0 auto 4px">
+          ${empId ? (EMPLOYEES[empId]?.initials || '?') : '?'}
+        </div>
+        <div style="font-size:11px;font-weight:600;color:var(--text)">${empId ? EMPLOYEES[empId]?.name || empId : '-'}</div>
+        <div style="font-size:10px;color:var(--text3)">${label}</div>
+      </div>
+    </div>`;
+
+  let html = '';
+  if (line.first) {
+    html += makeStep('1차 결재', line.first, '#6366f1');
+    html += `<div style="color:var(--text3);font-size:18px">→</div>`;
+  }
+  html += makeStep('최종 결재', line.final, '#8b5cf6');
+  container.innerHTML = html;
+}
+
+// ── 전자결재 페이지 렌더링 ──
+function renderApprovalPage(docType) {
+  // 날짜 기본값 오늘로 설정
+  const todayStr = TODAY.toISOString().slice(0, 10);
+  const dateEl = document.getElementById(`${docType}Date`);
+  if (dateEl && !dateEl.value) dateEl.value = todayStr;
+
+  renderApprovalLineUI(docType, `${docType}ApprovalLineContent`);
+  renderApprovalHistory(docType);
+}
+
+// ── 전자결재 신청 내역 렌더링 ──
+function renderApprovalHistory(docType) {
+  const listEl = document.getElementById(`${docType}HistoryList`);
+  if (!listEl) return;
+  const myDocs = (approvalDocs[currentEmp.id] || []).filter(d => d.docType === docType);
+  if (!myDocs.length) { listEl.innerHTML = '<div style="color:var(--text3);font-size:14px">신청 내역이 없습니다.</div>'; return; }
+
+  listEl.innerHTML = myDocs.slice().reverse().map(d => {
+    const statusColor = d.status === '승인' ? 'var(--green)' : d.status === '미승인' ? 'var(--red)' : 'var(--yellow)';
+    return `
+      <div class="leave-history-item">
+        <div class="lhi-left">
+          <div style="font-size:13px;font-weight:600">${d.title}</div>
+          <div style="font-size:12px;color:var(--text3)">${d.date} · ${d.reason || ''}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:13px;font-weight:700;color:${statusColor}">${d.status}</div>
+          ${d.amount ? `<div style="font-size:12px;color:var(--text3)">${Number(d.amount).toLocaleString()}원</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── 전자결재 제출 ──
+async function submitApprovalDoc(docType) {
+  const titleEl   = document.getElementById(`${docType}Title`);
+  const dateEl    = document.getElementById(`${docType}Date`);
+  const amountEl  = document.getElementById(`${docType}Amount`);
+  const reasonEl  = document.getElementById(`${docType}Reason`);
+  const categoryEl = document.getElementById(`${docType}Category`);
+
+  const title  = titleEl?.value.trim();
+  const date   = dateEl?.value;
+  const amount = amountEl?.value;
+  const reason = reasonEl?.value.trim();
+
+  if (!title)  { alert('제목을 입력해주세요.'); return; }
+  if (!date)   { alert('날짜를 선택해주세요.'); return; }
+  if (!reason) { alert('사유를 입력해주세요.'); return; }
+  if (amountEl && !amount) { alert('금액을 입력해주세요.'); return; }
+  if (categoryEl && !categoryEl.value) { alert('항목을 선택해주세요.'); return; }
+
+  const line = approvalLines[docType];
+  const docId = 'DOC_' + Date.now();
+  const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
+
+  // 추가 필드
+  const extra = {};
+  if (docType === 'purchase') {
+    extra.qty = document.getElementById('purchaseQty')?.value;
+  }
+  if (docType === 'tax') {
+    extra.company = document.getElementById('taxCompany')?.value;
+    extra.regNum  = document.getElementById('taxRegNum')?.value;
+  }
+
+  const doc = {
+    id: docId, docType, title, date, amount, reason,
+    category: categoryEl?.value || '',
+    status: line.first ? '1차결재대기' : '최종결재대기',
+    submittedAt: now,
+    empId: currentEmp.id, empName: currentEmp.name,
+    firstApprover: line.first, finalApprover: line.final,
+    ...extra
+  };
+
+  if (!approvalDocs[currentEmp.id]) approvalDocs[currentEmp.id] = [];
+  approvalDocs[currentEmp.id].push(doc);
+  saveApprovalDocs();
+
+  // 1차 결재자에게 알림 발송
+  const firstApproverId = line.first || line.final;
+  await sendApprovalNotification(doc, firstApproverId, '결재요청');
+
+  showToast(`✅ ${DOC_LABELS[docType]} 신청이 완료되었습니다!`);
+
+  // 폼 초기화
+  titleEl.value = ''; dateEl.value = ''; reasonEl.value = '';
+  if (amountEl) amountEl.value = '';
+  if (categoryEl) categoryEl.value = '';
+
+  renderApprovalHistory(docType);
+}
+
+// ── 알림 발송 ──
+async function sendApprovalNotification(doc, receiverId, type) {
+  if (!notifications[receiverId]) notifications[receiverId] = [];
+  const noti = {
+    id: 'NOTI_' + Date.now(),
+    type: 'approval',
+    docType: doc.docType,
+    docId: doc.id,
+    fromId: doc.empId,
+    fromName: doc.empName,
+    title: doc.title,
+    status: type,
+    date: new Date().toISOString().slice(0, 10),
+    read: false,
+  };
+  notifications[receiverId].push(noti);
+  if (receiverId === currentEmp.id) updateNotiBadge();
+
+  try {
+    await apiPost({
+      action: 'saveNotification',
+      receiverId,
+      senderId: doc.empId,
+      senderName: doc.empName,
+      docId: doc.id,
+      docType: doc.docType,
+      docLabel: DOC_LABELS[doc.docType],
+      title: doc.title,
+      status: type,
+    });
+  } catch(e) { console.warn('알림 저장 실패', e); }
+}
+
+// ── 결재라인 설정 렌더링 (관리자) ──
+function renderApprovalLineSettings() {
+  const emps = Object.values(EMPLOYEES).filter(e => e.status === '재직');
+  const empOptions = emps.map(e => `<option value="${e.id}">${e.name} (${e.dept})</option>`).join('');
+
+  const docTypes = ['expense','purchase','tax','certificate'];
+  let html = '';
+
+  docTypes.forEach(dt => {
+    const line = approvalLines[dt];
+    const isNullFirst = dt === 'certificate';
+    html += `
+      <div style="padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border2);margin-bottom:12px">
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px">${DOC_LABELS[dt]}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          ${!isNullFirst ? `
+          <div>
+            <label class="form-label">1차 결재자</label>
+            <select class="form-select" id="alFirst_${dt}">
+              ${emps.map(e => `<option value="${e.id}" ${e.id === line.first ? 'selected' : ''}>${e.name}</option>`).join('')}
+            </select>
+          </div>` : '<div></div>'}
+          <div>
+            <label class="form-label">최종 결재자</label>
+            <select class="form-select" id="alFinal_${dt}">
+              ${emps.map(e => `<option value="${e.id}" ${e.id === line.final ? 'selected' : ''}>${e.name}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+      </div>`;
+  });
+
+  document.getElementById('approvalLineSettings').innerHTML = html;
+}
+
+// ── 결재라인 저장 ──
+function saveApprovalLines() {
+  const docTypes = ['expense','purchase','tax','certificate'];
+  docTypes.forEach(dt => {
+    const firstEl = document.getElementById(`alFirst_${dt}`);
+    const finalEl = document.getElementById(`alFinal_${dt}`);
+    approvalLines[dt] = {
+      first: firstEl ? firstEl.value : null,
+      final: finalEl.value,
+    };
+  });
+  localStorage.setItem('nxthr_approvalLines', JSON.stringify(approvalLines));
+  showToast('✅ 결재라인이 저장되었습니다!');
+}
+
+// ══════════════════════════════════════════
+//  재직증명서
+// ══════════════════════════════════════════
+let certDocs = JSON.parse(localStorage.getItem('nxthr_certDocs') || '{}');
+
+function saveCertDocs() {
+  localStorage.setItem('nxthr_certDocs', JSON.stringify(certDocs));
+}
+
+function renderCertificatePage() {
+  const emp = currentEmp;
+  const hire = emp.hireDate;
+
+  // 발급 정보 미리보기
+  document.getElementById('certPreview').innerHTML = `
+    <div>성명: <strong style="color:var(--text)">${emp.name}</strong></div>
+    <div>소속/부서: <strong style="color:var(--text)">${emp.dept}</strong></div>
+    <div>직급/직책: <strong style="color:var(--text)">${emp.title}</strong></div>
+    <div>재직기간: <strong style="color:var(--text)">${hire.getFullYear()}년 ${hire.getMonth()+1}월 ${hire.getDate()}일 ~</strong></div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px">※ 주민등록번호 · 담당업무는 추후 추가 예정</div>
+  `;
+
+  // 결재자 표시
+  const finalId = approvalLines.certificate.final;
+  const finalEmp = EMPLOYEES[finalId];
+  document.getElementById('certApproverDisplay').innerHTML =
+    finalEmp ? `${finalEmp.name} (${finalEmp.dept} · ${finalEmp.title})` : '-';
+
+  // 사유 기타 처리
+  document.getElementById('certReason').onchange = function() {
+    document.getElementById('certEtcGroup').style.display = this.value === '기타' ? '' : 'none';
+  };
+
+  renderCertHistory();
+}
+
+function renderCertHistory() {
+  const listEl = document.getElementById('certHistoryList');
+  if (!listEl) return;
+  const myDocs = certDocs[currentEmp.id] || [];
+  if (!myDocs.length) { listEl.innerHTML = '<div style="color:var(--text3);font-size:14px">신청 내역이 없습니다.</div>'; return; }
+
+  listEl.innerHTML = myDocs.slice().reverse().map(d => {
+    const statusColor = d.status === '승인' ? 'var(--green)' : d.status === '미승인' ? 'var(--red)' : 'var(--yellow)';
+    return `
+      <div class="leave-history-item">
+        <div class="lhi-left">
+          <div style="font-size:13px;font-weight:600">재직증명서 발급요청</div>
+          <div style="font-size:12px;color:var(--text3)">${d.submittedAt} · ${d.reason}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:13px;font-weight:700;color:${statusColor}">${d.status}</div>
+          ${d.status === '승인' ? `<div style="font-size:11px;color:var(--cyan);cursor:pointer" onclick="downloadCertPdf('${d.id}')">📄 PDF 다운로드</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function submitCertificate() {
+  const reasonEl = document.getElementById('certReason');
+  const reason = reasonEl.value === '기타'
+    ? document.getElementById('certEtcReason').value.trim()
+    : reasonEl.value;
+
+  if (!reason) { alert('발급 사유를 선택해주세요.'); return; }
+
+  const docId = 'CERT_' + Date.now();
+  const now = new Date().toISOString().slice(0, 16).replace('T', ' ');
+  const finalId = approvalLines.certificate.final;
+
+  const doc = {
+    id: docId, reason, status: '결재대기',
+    submittedAt: now,
+    empId: currentEmp.id, empName: currentEmp.name,
+    empDept: currentEmp.dept, empTitle: currentEmp.title,
+    hireDate: currentEmp.hireDate.toISOString().slice(0, 10),
+    finalApprover: finalId,
+  };
+
+  if (!certDocs[currentEmp.id]) certDocs[currentEmp.id] = [];
+  certDocs[currentEmp.id].push(doc);
+  saveCertDocs();
+
+  // 결재자에게 알림 발송
+  await sendApprovalNotification({ ...doc, docType: 'certificate', title: '재직증명서 발급요청' }, finalId, '결재요청');
+
+  showToast('✅ 재직증명서 발급 신청이 완료되었습니다!');
+  reasonEl.value = '';
+  document.getElementById('certEtcGroup').style.display = 'none';
+  renderCertHistory();
+}
+
+// ── 재직증명서 PDF 생성 (승인 후 알림함에서 다운로드) ──
+function downloadCertPdf(docId) {
+  // 내 certDocs에서 해당 문서 찾기
+  let doc = null;
+  for (const empId in certDocs) {
+    const found = certDocs[empId].find(d => d.id === docId);
+    if (found) { doc = found; break; }
+  }
+  if (!doc) { alert('문서를 찾을 수 없습니다.'); return; }
+
+  const emp = EMPLOYEES[doc.empId];
+  const hire = new Date(doc.hireDate);
+  const approveDate = doc.approvedAt ? new Date(doc.approvedAt) : new Date();
+
+  // HTML → PDF (프린트 방식)
+  const html = `
+    <!DOCTYPE html>
+    <html lang="ko">
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap');
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Noto Sans KR', sans-serif; background:#fff; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+        .cert { width:595px; padding:60px 70px; border:2px solid #000; }
+        h1 { text-align:center; font-size:36px; font-weight:900; letter-spacing:8px; margin-bottom:50px; }
+        table { width:100%; border-collapse:collapse; margin-bottom:40px; }
+        td { border:1px solid #333; padding:12px 16px; font-size:14px; }
+        td:first-child { font-weight:700; width:120px; background:#f9f9f9; text-align:center; }
+        .cert-text { text-align:center; font-size:15px; margin:40px 0; }
+        .cert-date { text-align:center; font-size:15px; margin-bottom:40px; }
+        .cert-sign { text-align:right; font-size:15px; margin-top:20px; }
+        .logo-area { text-align:right; margin-bottom:6px; }
+        .logo-area img { height:40px; }
+      </style>
+    </head>
+    <body>
+      <div class="cert">
+        <h1>재 직 증 명 서</h1>
+        <table>
+          <tr><td>성 명</td><td>${emp?.name || doc.empName}</td><td>주민등록번호</td><td></td></tr>
+          <tr><td>소속 / 부서</td><td>${doc.empDept}</td><td>직급 / 직책</td><td>${doc.empTitle}</td></tr>
+          <tr><td>담당업무</td><td colspan="3"></td></tr>
+          <tr><td>재직기간</td><td colspan="3">${hire.getFullYear()}년 ${hire.getMonth()+1}월 ${hire.getDate()}일 ~</td></tr>
+        </table>
+        <p class="cert-text">상기 내용이 사실임을 증명합니다.</p>
+        <p class="cert-date">${approveDate.getFullYear()}년 ${approveDate.getMonth()+1}월 ${approveDate.getDate()}일</p>
+        <div class="cert-sign">
+          <div class="logo-area">
+            <span style="font-size:20px;font-weight:900;background:linear-gradient(120deg,#818cf8,#c084fc,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">NxtCloud</span>
+          </div>
+          대표이사 &nbsp; 이 휘 원
+        </div>
+      </div>
+    </body>
+    </html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.onload = () => win.print();
+}
+
+// ── 알림함에서 전자결재 승인/미승인 처리 ──
+async function approveApprovalDoc(notiId, approve) {
+  const noti = (notifications[currentEmp.id] || []).find(n => n.id === notiId);
+  if (!noti) return;
+
+  const { docType, docId, fromId } = noti;
+
+  if (docType === 'certificate') {
+    // 재직증명서 처리
+    const docs = certDocs[fromId] || [];
+    const doc = docs.find(d => d.id === docId);
+    if (doc) {
+      doc.status = approve ? '승인' : '미승인';
+      doc.approvedAt = new Date().toISOString().slice(0, 16).replace('T', ' ');
+      saveCertDocs();
+
+      // 신청자에게 알림 + PDF 정보 전송
+      if (!notifications[fromId]) notifications[fromId] = [];
+      notifications[fromId].push({
+        id: 'NOTI_' + Date.now(),
+        type: 'approval_result',
+        docType: 'certificate',
+        docId,
+        fromId: currentEmp.id,
+        fromName: currentEmp.name,
+        title: '재직증명서 발급요청',
+        status: approve ? '승인' : '미승인',
+        date: new Date().toISOString().slice(0, 10),
+        read: false,
+      });
+    }
+  } else {
+    // 일반 전자결재 처리
+    const docs = approvalDocs[fromId] || [];
+    const doc = docs.find(d => d.id === docId);
+    if (doc) {
+      const line = approvalLines[docType];
+      if (doc.status === '1차결재대기' && approve) {
+        doc.status = '최종결재대기';
+        // 최종 결재자에게 알림
+        await sendApprovalNotification(doc, line.final, '결재요청');
+      } else {
+        doc.status = approve ? '승인' : '미승인';
+      }
+      saveApprovalDocs();
+
+      // 신청자에게 결과 알림
+      if (!notifications[fromId]) notifications[fromId] = [];
+      notifications[fromId].push({
+        id: 'NOTI_' + Date.now(),
+        type: 'approval_result',
+        docType,
+        docId,
+        fromId: currentEmp.id,
+        fromName: currentEmp.name,
+        title: noti.title,
+        status: approve ? '승인' : '미승인',
+        date: new Date().toISOString().slice(0, 10),
+        read: false,
+      });
+    }
+  }
+
+  // 내 알림 읽음 처리
+  noti.read = true;
+  noti.processed = true;
+  updateNotiBadge();
+  renderInbox();
+  showToast(approve ? '✅ 승인되었습니다.' : '❌ 미승인 처리되었습니다.');
+}
 </script>
 </body>
 </html>
