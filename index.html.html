@@ -895,6 +895,17 @@ const DEPT_COLOR_MAP = {
 // 직급→role 매핑
 const GRADE_ROLE_MAP = { '경영진':'executive', '팀장':'lead', '팀원':'member' };
 
+// 직책 매핑 (사원ID → 직책)
+const TITLE_MAP = {
+  teo: 'CEO', oliver: 'COO', jack: 'CTO',
+  amanda: 'Team Lead', glen: 'Team Lead', jin: 'Team Lead',
+  jayden: 'Team Lead', sik: 'Team Lead',
+  ella: 'Technical Trainer', karin: 'Technical Trainer',
+  lucy: 'Software Engineer', eren: 'Software Engineer',
+  brad: 'Solution Architect',
+  sancho: 'Technical Operator', kevin: 'Technical Operator',
+};
+
 // 관리자 권한 부여 목록 (사원ID)
 const ADMIN_IDS = ['teo','oliver','amanda','jack'];
 
@@ -951,6 +962,7 @@ async function loadEmployees() {
         phone:    e.phone,
         email:    e.email,
         status:   e.status,
+        title:    TITLE_MAP[e.id] || e.title || e.position || '',
       };
     });
 
@@ -2023,7 +2035,7 @@ function renderApproverSection() {
       const e = EMPLOYEES[id];
       return `<button class="exec-select-btn" id="exec-btn-${id}" onclick="selectExec('${id}')">
         <div style="font-size:12px;font-weight:700">${e.name}</div>
-        <div style="font-size:10px;color:var(--text3)">${e.title} · ${e.dept}</div>
+        <div style="font-size:10px;color:var(--text3)">${e.nickname.split('(')[0].trim()} · ${e.title}</div>
       </button>`;
     }).join('');
   }
