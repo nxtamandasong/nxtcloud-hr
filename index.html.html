@@ -2023,7 +2023,7 @@ function renderApproverSection() {
       const e = EMPLOYEES[id];
       return `<button class="exec-select-btn" id="exec-btn-${id}" onclick="selectExec('${id}')">
         <div style="font-size:12px;font-weight:700">${e.name}</div>
-        <div style="font-size:10px;color:var(--text3)">${e.nickname} · ${e.role === 'executive' ? e.title : ''}</div>
+        <div style="font-size:10px;color:var(--text3)">${e.title} · ${e.dept}</div>
       </button>`;
     }).join('');
   }
