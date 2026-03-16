@@ -1114,7 +1114,7 @@ function showIdHints(val) {
       <div style="width:28px;height:28px;border-radius:50%;background:${e.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">${e.initials}</div>
       <div>
         <div style="font-weight:600">${e.nickname} <span style="color:var(--text3);font-weight:400">${e.name}</span></div>
-        <div style="font-size:11px;color:var(--text3)">${e.dept} · ${e.role === 'executive' ? 'C-Level' : e.role === 'lead' ? '팀장' : '팀원'}</div>
+        <div style="font-size:11px;color:var(--text3)">${e.dept} · ${e.role === 'executive' ? e.title : e.role === 'lead' ? '팀장' : '팀원'}</div>
       </div>
     </div>`).join('');
 }
@@ -1392,7 +1392,7 @@ function renderProfile() {
   const emp = currentEmp;
   const serviceMs = TODAY - emp.hireDate;
   const serviceDays = Math.floor(serviceMs / (1000*60*60*24));
-  const roleLabel = emp.role === 'executive' ? 'C-Level' : emp.role === 'lead' ? '팀장' : '팀원';
+  const roleLabel = emp.role === 'executive' ? emp.title : emp.role === 'lead' ? '팀장' : '팀원';
 
   document.getElementById('profileHeader').innerHTML = `
     <div>
@@ -1569,7 +1569,7 @@ function renderAdminLeave() {
     const gen2026 = ld.find(d=>d.type==='annual' && d.label.includes('2026'))?.generated || 0;
     const reqCount = (leaveRequests[e.id] || []).length;
     const dColor = DEPT_COLORS[e.dept] || '#666';
-    const roleLabel = e.role==='executive' ? 'C-Level' : e.role==='lead' ? '팀장' : '팀원';
+    const roleLabel = e.role==='executive' ? e.title : e.role==='lead' ? '팀장' : '팀원';
     const remainColor = remaining >= 10 ? 'var(--green)' : remaining >= 5 ? 'var(--yellow)' : 'var(--red)';
 
     html += `<tr>
@@ -2023,7 +2023,7 @@ function renderApproverSection() {
       const e = EMPLOYEES[id];
       return `<button class="exec-select-btn" id="exec-btn-${id}" onclick="selectExec('${id}')">
         <div style="font-size:12px;font-weight:700">${e.name}</div>
-        <div style="font-size:10px;color:var(--text3)">${e.nickname} · ${e.role === 'executive' ? 'C-Level' : ''}</div>
+        <div style="font-size:10px;color:var(--text3)">${e.nickname} · ${e.role === 'executive' ? e.title : ''}</div>
       </button>`;
     }).join('');
   }
