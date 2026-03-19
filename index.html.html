@@ -747,48 +747,84 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
       </div>
 
       <!-- ── 세금계산서 발행요청 ── -->
-      <div class="page" id="page-tax">
-        <div class="page-title">🧾 세금계산서 발행요청</div>
-        <div class="page-sub">세금계산서 발행을 요청하세요</div>
-        <div class="card">
-          <div class="card-title"><span class="card-title-icon">✏️</span> 신청서 작성</div>
-          <div class="form-grid">
-            <div class="form-group full">
-              <label class="form-label">제목 <span class="req-star">*</span></label>
-              <input class="form-input" type="text" id="taxTitle" placeholder="예: (주)ABC 3월 용역비 세금계산서">
-            </div>
-            <div class="form-group">
-              <label class="form-label">발행 희망일 <span class="req-star">*</span></label>
-              <input class="form-input" type="date" id="taxDate">
-            </div>
-            <div class="form-group">
-              <label class="form-label">공급가액 (원) <span class="req-star">*</span></label>
-              <input class="form-input" type="number" id="taxAmount" placeholder="0">
-            </div>
-            <div class="form-group">
-              <label class="form-label">공급받는 회사명 <span class="req-star">*</span></label>
-              <input class="form-input" type="text" id="taxCompany" placeholder="(주)거래처명">
-            </div>
-            <div class="form-group">
-              <label class="form-label">사업자등록번호</label>
-              <input class="form-input" type="text" id="taxRegNum" placeholder="000-00-00000">
-            </div>
-            <div class="form-group full">
-              <label class="form-label">품목/내용 <span class="req-star">*</span></label>
-              <textarea class="form-textarea" id="taxReason" placeholder="발행 품목 및 내용을 입력하세요..."></textarea>
-            </div>
-          </div>
-          <div id="taxApprovalLine" style="margin:16px 0;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border2)">
-            <div style="font-size:12px;font-weight:700;color:var(--text3);letter-spacing:.08em;margin-bottom:12px">📋 결재 라인</div>
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap" id="taxApprovalLineContent"></div>
-          </div>
-          <button class="submit-btn" onclick="submitApprovalDoc('tax')">신청하기 →</button>
-        </div>
-        <div class="card">
-          <div class="card-title"><span class="card-title-icon">📝</span> 신청 내역</div>
-          <div id="taxHistoryList" style="color:var(--text3);font-size:14px">신청 내역이 없습니다.</div>
-        </div>
+<div class="page" id="page-tax">
+  <div class="page-title">🧾 세금계산서 발행요청</div>
+  <div class="page-sub">세금계산서 발행을 요청하세요</div>
+  <div class="card">
+    <div class="card-title"><span class="card-title-icon">✏️</span> 신청서 작성</div>
+    <div class="form-grid">
+
+      <div class="form-group full">
+        <label class="form-label">제목 <span class="req-star">*</span></label>
+        <input class="form-input" type="text" id="taxTitle" placeholder="예: (주)ABC 3월 용역비 세금계산서">
       </div>
+
+      <div class="form-group">
+        <label class="form-label">작성일자 <span class="req-star">*</span></label>
+        <input class="form-input" type="date" id="taxWriteDate">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">발행 희망일 <span class="req-star">*</span></label>
+        <input class="form-input" type="date" id="taxDate">
+      </div>
+
+      <div class="form-group full">
+        <label class="form-label">공급받는자 상호 <span class="req-star">*</span></label>
+        <select class="form-select" id="taxCompany" onchange="onTaxClientChange()">
+          <option value="">거래처를 선택하세요</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">사업자등록번호</label>
+        <input class="form-input" type="text" id="taxRegNum" placeholder="자동입력" readonly>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">대표자 성명</label>
+        <input class="form-input" type="text" id="taxCeo" placeholder="자동입력" readonly>
+      </div>
+
+      <div class="form-group full">
+        <label class="form-label">주소</label>
+        <input class="form-input" type="text" id="taxAddress" placeholder="자동입력" readonly>
+      </div>
+
+      <div class="form-group full">
+        <label class="form-label">품목/내용 <span class="req-star">*</span></label>
+        <textarea class="form-textarea" id="taxReason" placeholder="발행 품목 및 내용을 입력하세요..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">공급가액 (원) <span class="req-star">*</span></label>
+        <input class="form-input" type="number" id="taxAmount" placeholder="0" oninput="calcTaxAmount()">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">세액 (10%)</label>
+        <input class="form-input" type="text" id="taxVat" placeholder="자동계산" readonly>
+      </div>
+
+      <div class="form-group full">
+        <label class="form-label">합계금액</label>
+        <input class="form-input" type="text" id="taxTotal" placeholder="자동계산" readonly>
+      </div>
+
+    </div>
+
+    <div id="taxApprovalLine" style="margin:16px 0;padding:16px;background:var(--surface2);border-radius:12px;border:1px solid var(--border2)">
+      <div style="font-size:12px;font-weight:700;color:var(--text3);letter-spacing:.08em;margin-bottom:12px">📋 결재 라인</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap" id="taxApprovalLineContent"></div>
+    </div>
+    <button class="submit-btn" onclick="submitApprovalDoc('tax')">신청하기 →</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><span class="card-title-icon">📝</span> 신청 내역</div>
+    <div id="taxHistoryList" style="color:var(--text3);font-size:14px">신청 내역이 없습니다.</div>
+  </div>
+</div>
 
       <!-- ── 재직증명서 ── -->
       <div class="page" id="page-certificate">
@@ -2375,7 +2411,39 @@ const DEFAULT_APPROVAL_LINES = {
 };
 
 let approvalLines = JSON.parse(localStorage.getItem('nxthr_approvalLines') || 'null') || DEFAULT_APPROVAL_LINES;
+// ── 거래처 데이터 (임시 - 추후 Sheets 연동 예정) ──
+const CLIENTS = [
+  { name: '(주)ABC', regNum: '123-45-67890', ceo: '홍길동', address: '서울시 강남구 테헤란로 123', email: 'abc@abc.com' },
+  { name: '(주)XYZ', regNum: '987-65-43210', ceo: '김철수', address: '서울시 서초구 서초대로 456', email: 'xyz@xyz.com' },
+];
 
+function onTaxClientChange() {
+  const select = document.getElementById('taxCompany');
+  const selected = CLIENTS.find(c => c.name === select.value);
+  document.getElementById('taxRegNum').value  = selected ? selected.regNum  : '';
+  document.getElementById('taxCeo').value     = selected ? selected.ceo     : '';
+  document.getElementById('taxAddress').value = selected ? selected.address : '';
+}
+
+function calcTaxAmount() {
+  const amount = Number(document.getElementById('taxAmount').value) || 0;
+  const vat    = Math.round(amount * 0.1);
+  const total  = amount + vat;
+  document.getElementById('taxVat').value   = vat.toLocaleString() + '원';
+  document.getElementById('taxTotal').value = total.toLocaleString() + '원';
+}
+
+function initTaxClientSelect() {
+  const select = document.getElementById('taxCompany');
+  if (!select) return;
+  select.innerHTML = '<option value="">거래처를 선택하세요</option>';
+  CLIENTS.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.name;
+    opt.textContent = c.name;
+    select.appendChild(opt);
+  });
+}
 const DOC_LABELS = {
   expense: '지출결의서',
   purchase: '구매신청',
@@ -2419,10 +2487,15 @@ function renderApprovalLineUI(docType, containerId) {
 
 // ── 전자결재 페이지 렌더링 ──
 function renderApprovalPage(docType) {
-  // 날짜 기본값 오늘로 설정
   const todayStr = TODAY.toISOString().slice(0, 10);
   const dateEl = document.getElementById(`${docType}Date`);
   if (dateEl && !dateEl.value) dateEl.value = todayStr;
+
+  if (docType === 'tax') {
+    const writeEl = document.getElementById('taxWriteDate');
+    if (writeEl && !writeEl.value) writeEl.value = todayStr;
+    initTaxClientSelect();
+  }
 
   renderApprovalLineUI(docType, `${docType}ApprovalLineContent`);
   renderApprovalHistory(docType);
@@ -2479,9 +2552,14 @@ async function submitApprovalDoc(docType) {
   if (docType === 'purchase') {
     extra.qty = document.getElementById('purchaseQty')?.value;
   }
-  if (docType === 'tax') {
-    extra.company = document.getElementById('taxCompany')?.value;
-    extra.regNum  = document.getElementById('taxRegNum')?.value;
+ if (docType === 'tax') {
+    extra.company   = document.getElementById('taxCompany')?.value;
+    extra.regNum    = document.getElementById('taxRegNum')?.value;
+    extra.ceo       = document.getElementById('taxCeo')?.value;
+    extra.address   = document.getElementById('taxAddress')?.value;
+    extra.writeDate = document.getElementById('taxWriteDate')?.value;
+    extra.vat       = document.getElementById('taxVat')?.value;
+    extra.total     = document.getElementById('taxTotal')?.value;
   }
 
   const doc = {
@@ -2504,11 +2582,19 @@ async function submitApprovalDoc(docType) {
 
   showToast(`✅ ${DOC_LABELS[docType]} 신청이 완료되었습니다!`);
 
-  // 폼 초기화
+// 폼 초기화
   titleEl.value = ''; dateEl.value = ''; reasonEl.value = '';
   if (amountEl) amountEl.value = '';
   if (categoryEl) categoryEl.value = '';
-
+  if (docType === 'tax') {
+    document.getElementById('taxWriteDate').value = '';
+    document.getElementById('taxCompany').value   = '';
+    document.getElementById('taxRegNum').value    = '';
+    document.getElementById('taxCeo').value       = '';
+    document.getElementById('taxAddress').value   = '';
+    document.getElementById('taxVat').value       = '';
+    document.getElementById('taxTotal').value     = '';
+  }
   renderApprovalHistory(docType);
 }
 
