@@ -746,7 +746,7 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
         </div>
       </div>
 
-      <!-- ── 세금계산서 발행요청 ── -->
+<!-- ── 세금계산서 발행요청 ── -->
 <div class="page" id="page-tax">
   <div class="page-title">🧾 세금계산서 발행요청</div>
   <div class="page-sub">세금계산서 발행을 요청하세요</div>
@@ -754,61 +754,93 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
     <div class="card-title"><span class="card-title-icon">✏️</span> 신청서 작성</div>
     <div class="form-grid">
 
-      <div class="form-group full">
-        <label class="form-label">제목 <span class="req-star">*</span></label>
-        <input class="form-input" type="text" id="taxTitle" placeholder="예: (주)ABC 3월 용역비 세금계산서">
-      </div>
-
       <div class="form-group">
         <label class="form-label">작성일자 <span class="req-star">*</span></label>
         <input class="form-input" type="date" id="taxWriteDate">
       </div>
 
       <div class="form-group">
-        <label class="form-label">발행 희망일 <span class="req-star">*</span></label>
-        <input class="form-input" type="date" id="taxDate">
+        <label class="form-label">발급일자 (일자만) <span class="req-star">*</span></label>
+        <input class="form-input" type="number" id="taxIssueDay" min="1" max="31" placeholder="예: 19">
       </div>
 
       <div class="form-group full">
         <label class="form-label">공급받는자 상호 <span class="req-star">*</span></label>
-        <select class="form-select" id="taxCompany" onchange="onTaxClientChange()">
+        <select class="form-select" id="taxCompany" onchange="onTaxCompanyChange()">
           <option value="">거래처를 선택하세요</option>
         </select>
       </div>
 
-      <div class="form-group">
-        <label class="form-label">사업자등록번호</label>
-        <input class="form-input" type="text" id="taxRegNum" placeholder="자동입력" readonly>
+      <div id="taxNewClientForm" style="display:none;grid-column:1/-1;background:var(--surface2);border:1px solid var(--border2);border-radius:12px;padding:16px;margin-top:4px">
+        <div style="font-size:12px;font-weight:700;color:var(--cyan);margin-bottom:14px;letter-spacing:.06em">✨ 새 거래처 등록</div>
+        <div class="form-grid" style="padding:0">
+          <div class="form-group full">
+            <label class="form-label">상호명 <span class="req-star">*</span></label>
+            <input class="form-input" type="text" id="newClientName" placeholder="주식회사 OOO">
+          </div>
+          <div class="form-group">
+            <label class="form-label">사업자등록번호 <span class="req-star">*</span></label>
+            <input class="form-input" type="text" id="newClientRegNum" placeholder="0000000000 (- 없이)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">대표자 성명 <span class="req-star">*</span></label>
+            <input class="form-input" type="text" id="newClientContactName" placeholder="홍길동">
+          </div>
+          <div class="form-group full">
+            <label class="form-label">사업장 주소</label>
+            <input class="form-input" type="text" id="newClientAddr" placeholder="서울특별시 ...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">업태</label>
+            <input class="form-input" type="text" id="newClientIndustry" placeholder="정보통신업">
+          </div>
+          <div class="form-group">
+            <label class="form-label">종목</label>
+            <input class="form-input" type="text" id="newClientType" placeholder="소프트웨어 개발">
+          </div>
+          <div class="form-group full">
+            <label class="form-label">이메일</label>
+            <input class="form-input" type="email" id="newClientEmail" placeholder="contact@company.com">
+          </div>
+        </div>
+        <button onclick="saveNewTaxClient()" style="margin-top:12px;padding:10px 20px;background:var(--cyan2);border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+          💾 거래처 저장 후 선택
+        </button>
       </div>
 
       <div class="form-group">
-        <label class="form-label">대표자 성명</label>
-        <input class="form-input" type="text" id="taxCeo" placeholder="자동입력" readonly>
+        <label class="form-label">공급받는자 등록번호</label>
+        <input class="form-input" type="text" id="taxRegNum" readonly style="opacity:0.6;cursor:not-allowed" placeholder="거래처 선택 시 자동입력">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">공급받는자 성명</label>
+        <input class="form-input" type="text" id="taxContactName" placeholder="거래처 선택 시 자동입력">
       </div>
 
       <div class="form-group full">
-        <label class="form-label">주소</label>
-        <input class="form-input" type="text" id="taxAddress" placeholder="자동입력" readonly>
+        <label class="form-label">공급받는자 이메일</label>
+        <input class="form-input" type="email" id="taxEmail" placeholder="거래처 선택 시 자동입력">
       </div>
 
       <div class="form-group full">
-        <label class="form-label">품목/내용 <span class="req-star">*</span></label>
-        <textarea class="form-textarea" id="taxReason" placeholder="발행 품목 및 내용을 입력하세요..."></textarea>
+        <label class="form-label">품목 <span class="req-star">*</span></label>
+        <input class="form-input" type="text" id="taxItem" placeholder="예: AWS Cloud Invoice">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">수량 <span class="req-star">*</span></label>
+        <input class="form-input" type="number" id="taxQty" value="1" min="1">
       </div>
 
       <div class="form-group">
         <label class="form-label">공급가액 (원) <span class="req-star">*</span></label>
-        <input class="form-input" type="number" id="taxAmount" placeholder="0" oninput="calcTaxAmount()">
+        <input class="form-input" type="text" id="taxAmount" placeholder="예: 1,576,100" oninput="onTaxAmountInput(this)">
       </div>
 
       <div class="form-group">
-        <label class="form-label">세액 (10%)</label>
-        <input class="form-input" type="text" id="taxVat" placeholder="자동계산" readonly>
-      </div>
-
-      <div class="form-group full">
-        <label class="form-label">합계금액</label>
-        <input class="form-input" type="text" id="taxTotal" placeholder="자동계산" readonly>
+        <label class="form-label">세액 (공급가액의 10%)</label>
+        <input class="form-input" type="text" id="taxVat" readonly style="opacity:0.6;cursor:not-allowed" placeholder="자동입력">
       </div>
 
     </div>
@@ -817,6 +849,7 @@ body{background:var(--bg);color:var(--text);font-family:'Pretendard',sans-serif;
       <div style="font-size:12px;font-weight:700;color:var(--text3);letter-spacing:.08em;margin-bottom:12px">📋 결재 라인</div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap" id="taxApprovalLineContent"></div>
     </div>
+
     <button class="submit-btn" onclick="submitApprovalDoc('tax')">신청하기 →</button>
   </div>
 
@@ -2494,7 +2527,7 @@ function renderApprovalPage(docType) {
   if (docType === 'tax') {
     const writeEl = document.getElementById('taxWriteDate');
     if (writeEl && !writeEl.value) writeEl.value = todayStr;
-    initTaxClientSelect();
+  refreshTaxClientDropdown();
   }
 
   renderApprovalLineUI(docType, `${docType}ApprovalLineContent`);
@@ -2523,7 +2556,109 @@ function renderApprovalHistory(docType) {
       </div>`;
   }).join('');
 }
+// ── 세금계산서 거래처 데이터 ──
+const TAX_CLIENTS_DEFAULT = {
+  '주식회사 팝콘사':         { regNum:'2068703697', name:'채승엽', addr:'서울특별시 강남구 언주로 432-6(역삼동, 성보빌딩Ⅱ), 6층', industry:'서비스', type:'소프트웨어개발', email:'sales@popcornsar.com' },
+  '주식회사 메인콘텐츠':     { regNum:'8748600628', name:'임한규', addr:'서울특별시 동작구 상도로 65, 6층', industry:'교육서비스업', type:'콘텐츠 출판', email:'edu@maincontents.com' },
+  '주식회사 해줌':           { regNum:'1348700089', name:'권오현', addr:'서울시 송파구 볍원로 128, A동 706호', industry:'서비스', type:'소프트웨어자문개발공급', email:'hk.lee@haezoom.com' },
+  '주식회사 노리터':         { regNum:'3138702813', name:'김정현', addr:'경기도 파주시 문산읍 우계로 430, 2층 1호 좌측', industry:'정보통신업', type:'응용 소프트웨어 개발 및 공급업', email:'noriteroffic@gmail.com' },
+  '주식회사 스캣업':         { regNum:'7078103863', name:'이국영', addr:'경기도 화성시 동탄기흥로 614, 12층 1216호(영천동)', industry:'정보통신업', type:'전자상거래 소매업', email:'sglee@scatup.com' },
+  '주식회사 어치브모멘트':   { regNum:'8238803131', name:'김기현', addr:'서울특별시 동대문구 경희대로 26, 삼의원창업센터 410호 411호(회기동)', industry:'정보통신업', type:'컴퓨터 프로그래밍 서비스업', email:'hutten@achvm.com' },
+  '주식회사 브레인크루':     { regNum:'3788101032', name:'이경록', addr:'경기도 성남시 분당구 정자로 2, 1차 1602호(정자동, 분당 정자동 푸르 지오시티)', industry:'서비스', type:'소프트웨어 자문,개발 및 공급업', email:'min@brain-crew.com' },
+  '주식회사 키위플러스':     { regNum:'1208806591', name:'최종배', addr:'서울특별시 영등포구 국회대로70길 23, 13층(여의도동, 용산빌딩)', industry:'서비스', type:'소프트웨어개발및판매업', email:'op@kiwiplus.io' },
+  '주식회사 브랜치앤바운드': { regNum:'5568802019', name:'이승용', addr:'서울특별시 서초구 남부순환로358길 49, 4층(양재동, 자강빌딩)', industry:'', type:'응용 소프트웨어 개발 및 공급업', email:'staff@codetree.ai' },
+};
 
+function loadTaxClients() {
+  const saved = localStorage.getItem('taxClients_custom');
+  const custom = saved ? JSON.parse(saved) : {};
+  return { ...TAX_CLIENTS_DEFAULT, ...custom };
+}
+
+function refreshTaxClientDropdown() {
+  const select = document.getElementById('taxCompany');
+  if (!select) return;
+  const clients = loadTaxClients();
+  const defaultNames = Object.keys(TAX_CLIENTS_DEFAULT);
+  const customNames  = Object.keys(clients).filter(k => !defaultNames.includes(k));
+
+  select.innerHTML = `<option value="">거래처를 선택하세요</option>`;
+  defaultNames.forEach(name => {
+    select.innerHTML += `<option value="${name}">${name}</option>`;
+  });
+  if (customNames.length > 0) {
+    select.innerHTML += `<option disabled>──────────────</option>`;
+    customNames.forEach(name => {
+      select.innerHTML += `<option value="${name}">⭐ ${name}</option>`;
+    });
+  }
+  select.innerHTML += `<option disabled>──────────────</option>`;
+  select.innerHTML += `<option value="__new__">➕ 새로운 업체 등록하기</option>`;
+}
+
+function onTaxCompanyChange() {
+  const company = document.getElementById('taxCompany').value;
+  const newForm = document.getElementById('taxNewClientForm');
+  if (company === '__new__') {
+    newForm.style.display = 'block';
+    document.getElementById('taxRegNum').value      = '';
+    document.getElementById('taxContactName').value = '';
+    document.getElementById('taxEmail').value       = '';
+    return;
+  }
+  newForm.style.display = 'none';
+  const clients = loadTaxClients();
+  const client  = clients[company];
+  if (client) {
+    document.getElementById('taxRegNum').value      = client.regNum;
+    document.getElementById('taxContactName').value = client.name;
+    document.getElementById('taxEmail').value       = client.email;
+  } else {
+    document.getElementById('taxRegNum').value      = '';
+    document.getElementById('taxContactName').value = '';
+    document.getElementById('taxEmail').value       = '';
+  }
+}
+
+function saveNewTaxClient() {
+  const name     = document.getElementById('newClientName').value.trim();
+  const regNum   = document.getElementById('newClientRegNum').value.replace(/-/g, '').trim();
+  const cname    = document.getElementById('newClientContactName').value.trim();
+  const addr     = document.getElementById('newClientAddr').value.trim();
+  const industry = document.getElementById('newClientIndustry').value.trim();
+  const type     = document.getElementById('newClientType').value.trim();
+  const email    = document.getElementById('newClientEmail').value.trim();
+
+  if (!name)   { alert('상호명을 입력해주세요.'); return; }
+  if (!regNum) { alert('사업자등록번호를 입력해주세요.'); return; }
+  if (!cname)  { alert('대표자 성명을 입력해주세요.'); return; }
+
+  const saved  = localStorage.getItem('taxClients_custom');
+  const custom = saved ? JSON.parse(saved) : {};
+  custom[name] = { regNum, name: cname, addr, industry, type, email };
+  localStorage.setItem('taxClients_custom', JSON.stringify(custom));
+
+  refreshTaxClientDropdown();
+  document.getElementById('taxCompany').value     = name;
+  document.getElementById('taxRegNum').value      = regNum;
+  document.getElementById('taxContactName').value = cname;
+  document.getElementById('taxEmail').value       = email;
+
+  document.getElementById('taxNewClientForm').style.display = 'none';
+  ['newClientName','newClientRegNum','newClientContactName',
+   'newClientAddr','newClientIndustry','newClientType','newClientEmail']
+    .forEach(id => document.getElementById(id).value = '');
+
+  showToast('✅ 거래처가 저장되었습니다!');
+}
+
+function onTaxAmountInput(el) {
+  let raw = el.value.replace(/,/g, '').replace(/[^0-9]/g, '');
+  if (!raw) { el.value = ''; document.getElementById('taxVat').value = ''; return; }
+  el.value = Number(raw).toLocaleString();
+  const vat = Math.round(Number(raw) * 0.1);
+  document.getElementById('taxVat').value = vat.toLocaleString();
+}
 // ── 전자결재 제출 ──
 async function submitApprovalDoc(docType) {
   const titleEl   = document.getElementById(`${docType}Title`);
@@ -2552,15 +2687,20 @@ async function submitApprovalDoc(docType) {
   if (docType === 'purchase') {
     extra.qty = document.getElementById('purchaseQty')?.value;
   }
- if (docType === 'tax') {
-    extra.company   = document.getElementById('taxCompany')?.value;
-    extra.regNum    = document.getElementById('taxRegNum')?.value;
-    extra.ceo       = document.getElementById('taxCeo')?.value;
-    extra.address   = document.getElementById('taxAddress')?.value;
-    extra.writeDate = document.getElementById('taxWriteDate')?.value;
-    extra.vat       = document.getElementById('taxVat')?.value;
-    extra.total     = document.getElementById('taxTotal')?.value;
-  }
+if (docType === 'tax') {
+  const amountRaw = document.getElementById('taxAmount').value.replace(/,/g, '');
+  const vatRaw    = Math.round(Number(amountRaw) * 0.1);
+  extra.company     = document.getElementById('taxCompany').value;
+  extra.regNum      = document.getElementById('taxRegNum').value;
+  extra.contactName = document.getElementById('taxContactName').value;
+  extra.email       = document.getElementById('taxEmail').value;
+  extra.item        = document.getElementById('taxItem').value;
+  extra.qty         = document.getElementById('taxQty').value;
+  extra.amount      = amountRaw;
+  extra.vat         = String(vatRaw);
+  extra.issueDay    = document.getElementById('taxIssueDay').value;
+  extra.writeDate   = document.getElementById('taxWriteDate').value.replace(/-/g, '');
+}
 
   const doc = {
     id: docId, docType, title, date, amount, reason,
@@ -2586,15 +2726,19 @@ async function submitApprovalDoc(docType) {
   titleEl.value = ''; dateEl.value = ''; reasonEl.value = '';
   if (amountEl) amountEl.value = '';
   if (categoryEl) categoryEl.value = '';
-  if (docType === 'tax') {
-    document.getElementById('taxWriteDate').value = '';
-    document.getElementById('taxCompany').value   = '';
-    document.getElementById('taxRegNum').value    = '';
-    document.getElementById('taxCeo').value       = '';
-    document.getElementById('taxAddress').value   = '';
-    document.getElementById('taxVat').value       = '';
-    document.getElementById('taxTotal').value     = '';
-  }
+if (docType === 'tax') {
+  document.getElementById('taxCompany').value     = '';
+  document.getElementById('taxRegNum').value      = '';
+  document.getElementById('taxContactName').value = '';
+  document.getElementById('taxEmail').value       = '';
+  document.getElementById('taxItem').value        = '';
+  document.getElementById('taxQty').value         = '1';
+  document.getElementById('taxAmount').value      = '';
+  document.getElementById('taxVat').value         = '';
+  document.getElementById('taxIssueDay').value    = '';
+  document.getElementById('taxWriteDate').value   = '';
+  document.getElementById('taxNewClientForm').style.display = 'none';
+}
   renderApprovalHistory(docType);
 }
 
